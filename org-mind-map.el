@@ -93,7 +93,7 @@ ORG-MIND-MAP/WRAP-LINE-LENGTH characters long."
 
 (defun org-mind-map/delete-space (s)
   "Makes string S formatted to be usable within dot node names"
-  (replace-regexp-in-string "[^A-z ]" "" 
+  (replace-regexp-in-string "[^A-z0-9 ]" "" 
                             (replace-regexp-in-string "[ \\{}|\n]" "" s nil t)
   nil t))
 
