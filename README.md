@@ -34,7 +34,7 @@ Here is an example org-mode tree that demonstrates the basic concept
 
 and the result pdf file is shown below:
 
-[!example-1.org.pdf](/example-1.org.png)
+![example-1.org.pdf](example-1.org.png)
 
 ## Tags
 
@@ -53,7 +53,7 @@ You can also add tags, as in this org-mode file:
 
 These are randomly color-coded into pastel tags as shown below:
 
-[!example-2.org.pdf](/example-2.org.png)
+![example-2.org.pdf](example-2.org.png)
 
 ## Interleaving Graphs
 
@@ -78,6 +78,6 @@ Finally, by naming headlines across your org-mode file, as shown below, you can 
 
  this results in this file:
 
-[!example-3.org.pdf](/example-3.org.png)
+![example-3.org.pdf](example-3.org.png)
 
 
