@@ -7,22 +7,25 @@ This package relies on the [Graphviz](http://graphviz.org/) suite of graphical d
 
 This package also relies on the org-mode and dash libraries, available from melpa (M-x list-packages).
 
-# Installation
+# Installation and usage
 
 To install, add this code to your .emacs:
 
 ```elisp
-    (load "INSTALLPATH/org-mind-map.el")
+(load "INSTALLPATH/org-mind-map.el")
 ```
+
+Then, run M-x org-mind-map/write
 
 # Examples
 
-## Basic Concept
+## Basic concept
 
-Here is an example org-mode tree that demonstrates the basic concept
+Here is an example org-mode tree that demonstrates the basic concept:
 
 ```Org
-* This is an example org-mode tree 
+* This is an example org-mode tree
+The content of the node doesn't matter.
 ** Branch A
 *** Sub-Branch 1
 *** Sub-Branch 2
@@ -32,7 +35,7 @@ Here is an example org-mode tree that demonstrates the basic concept
 ** Branch D
 ```
 
-and the result pdf file is shown below:
+and the result is shown below:
 
 ![example-1.org.pdf](example-1.org.png)
 
@@ -51,7 +54,7 @@ You can also add tags, as in this org-mode file:
 ** Branch D
 ```
 
-These are randomly color-coded into pastel tags as shown below:
+These are randomly color-coded into pastel tags:
 
 ![example-2.org.pdf](example-2.org.png)
 
@@ -80,4 +83,4 @@ Finally, by naming headlines across your org-mode file, as shown below, you can 
 
 ![example-3.org.pdf](example-3.org.png)
 
-
+Note that the interleaving is done 
