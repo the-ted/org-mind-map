@@ -10,14 +10,74 @@ This package also relies on the =org-mode= and =dash= libraries, available from 
 # Installation
 
 To install, add this code to your .emacs:
+
+``` elisp
     (load "INSTALLPATH/org-mind-map.el")
+```
 
 # Examples
 
-Here is an example org-mode tree that demonstrates the basic concept [Example 1](example-1.org), and the result pdf file is [here](example-1.org.pdf).
+## Basic Concept
 
-You can also add tags, as in this org-mode file [Example 2](example-2.org), which are randomly color-coded into pastel tags as shown [here](example-2.org.pdf).
+Here is an example org-mode tree that demonstrates the basic concept
 
-Finally, by naming headlines across your org-mode file, as shown in [example 3](example-3.org), ypou can interleave trees.
+``` org
+* This is an example org-mode tree 
+** Branch A
+*** Sub-Branch 1
+*** Sub-Branch 2
+*** Sub-Branch 3
+** Branch B
+** Branch C
+** Branch D
+```
+
+and the result pdf file is shown below:
+
+[!example-1.org.pdf](example-1.org.png)
+
+## Tags
+
+You can also add tags, as in this org-mode file:
+
+``` org
+* This is an org-mode tree with tags
+** Branch A :TagA:
+*** Sub-Branch 1 :TagA:
+*** Sub-Branch 2 :TagA:
+*** Sub-Branch 3 :TagA:TagB:
+** Branch B :TagB:
+** Branch C
+** Branch D
+```
+
+These are randomly color-coded into pastel tags as shown below:
+
+[!example-2.org.pdf](example-2.org.png)
+
+## Interleaving Graphs
+
+Finally, by naming headlines across your org-mode file, as shown below, you can interleave trees.
+
+``` org
+* This is an org-mode tree with tags
+** Branch A :TagA:
+*** Sub-Branch 1 :TagA:
+*** Sub-Branch 2 :TagA:
+*** Sub-Branch 3 :TagA:TagB:
+** Branch B :TagB:
+** Branch C
+** Branch D
+* This is an org-mode tree that interleaves
+** Branch E
+*** Sub-Branch 3
+*** Sub-Branch 3 :TagA:TagB:
+** Branch B
+```
+
+
+ this results in this file:
+
+[!example-3.org.pdf](example-3.org.png)
 
 
