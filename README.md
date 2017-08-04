@@ -15,7 +15,7 @@ To install, add this code to your .emacs:
 (load "INSTALLPATH/org-mind-map.el")
 ```
 
-Then, run M-x org-mind-map/write
+Then, run M-x org-mind-map/write within the org-mode file you would like to make a mind-map for. If all works as expected, a PDF file will be generated in the same directory as the org file.
 
 # Examples
 
