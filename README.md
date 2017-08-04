@@ -83,4 +83,4 @@ Finally, by naming headlines across your org-mode file, as shown below, you can 
 
 ![example-3.org.pdf](example-3.org.png)
 
-Note that the interleaving is done 
+Note that the interleaving is done based on the exact text of the headline, so these have to exactly match (including tags).
