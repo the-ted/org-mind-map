@@ -80,6 +80,12 @@
   "Format of the DOT output. Defaults to PDF."
   :type 'string
   :group 'org-mind-map)
+
+(defcustom org-mind-map/rankdir "LR"
+  "Sets the order of the resulting graph. LR is left-to-right, and TB is top-to-bottom"
+  :type '(choice
+          (const :tag "Left to right" "LR")
+          (const :tag "Top to bottom" "TB")))
   
 (defun org-mind-map/wrap-lines (s)
   "wraps a string S so that it can never be more than
@@ -151,10 +157,11 @@ used in constructing the directed graph."
 			   (org-mind-map/write-tags hm hl))))))))
     output))
 
+
 (defun org-mind-map/make-dot (table)
   "Creates the dot file"
   (concat "digraph structs {
-   rankdir=LR;
+   rankdir=" org-mind-map/rankdir ";
    splines=true;
    node [shape=plaintext];\n"
 	  (mapconcat 'identity (mapcar #'(lambda (x)
