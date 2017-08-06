@@ -66,12 +66,12 @@
   :type 'integer
   :group 'org-mind-map)
 
-(defcustom org-mind-map/unflatten-command "unflatten.exe -l3"
+(defcustom org-mind-map/unflatten-command "unflatten -l3"
   "Shell executable command for running the UNFLATTEN command."
   :type 'string
   :group 'org-mind-map)
 
-(defcustom org-mind-map/dot-command "dot.exe"
+(defcustom org-mind-map/dot-command "dot"
   "Shell executable command for running the DOT command."
   :type 'string
   :group 'org-mind-map)
