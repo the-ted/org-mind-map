@@ -185,14 +185,26 @@ file, with the same name as the buffer file name."
 	  org-mind-map/dot-output " -o\"" (buffer-file-name)
 	  "." org-mind-map/dot-output "\""))
 
+(defun org-mind-map/update-message (process event)
+  (let* ((e (with-current-buffer "*org-mind-map/errors*"
+              (buffer-string))))
+    (if (string= e "")
+        (princ
+         (format "Org mind map %s" event))
+      (princ
+       (format "Org mind map %sErrors: %s" event e)))))
+
 (defun org-mind-map/write ()
   "Creates a directed graph output based on the org tree in the
 current buffer. To customize, see the org-mind-map group. 
 
 M-x customize-group org-mind-map"
   (interactive)
-  (start-process-shell-command "org-mind-map/s" nil (org-mind-map/command))
-  (process-send-string "org-mind-map/s" (org-mind-map/make-dot (org-mind-map/data)))
-  (process-send-eof "org-mind-map/s"))
+  (if (get-buffer "*org-mind-map/errors*")
+      (kill-buffer "*org-mind-map/errors*"))
+  (let* ((p (start-process-shell-command "org-mind-map/s" "*org-mind-map/errors*" (org-mind-map/command))))
+    (process-send-string "org-mind-map/s" (org-mind-map/make-dot (org-mind-map/data)))
+    (process-send-eof "org-mind-map/s")
+    (set-process-sentinel p 'org-mind-map/update-message)))
 
 ;; (global-set-key (kbd "<f4>") 'org-mind-map/write)
