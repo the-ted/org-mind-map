@@ -86,6 +86,15 @@
   :type '(choice
           (const :tag "Left to right" "LR")
           (const :tag "Top to bottom" "TB")))
+
+(defcustom org-mind-map/engine "dot"
+  "Sets the layout engine used in your graphs. See the graphviz user manual for description of these options."
+  :type '(choice
+          (const :tag "Directed Graph" "dot")
+          (const :tag "Undirected Spring Graph" "neato")
+          (const :tag "Radial Layout" "twopi")
+          (const :tag "Circular Layout" "circo")
+          (const :tag "Undirected Spring Force-Directed" "fdp")))
   
 (defun org-mind-map/wrap-lines (s)
   "wraps a string S so that it can never be more than
@@ -162,6 +171,7 @@ used in constructing the directed graph."
   "Creates the dot file"
   (concat "digraph structs {
    rankdir=" org-mind-map/rankdir ";
+   overlap=false;
    splines=true;
    node [shape=plaintext];\n"
 	  (mapconcat 'identity (mapcar #'(lambda (x)
@@ -189,7 +199,7 @@ file. The output file will be in the same location as the org
 file, with the same name as the buffer file name."
   (concat org-mind-map/unflatten-command " | "
 	  org-mind-map/dot-command " -T"
-	  org-mind-map/dot-output " -o\"" (buffer-file-name)
+	  org-mind-map/dot-output " -K" org-mind-map/engine " -o\"" (buffer-file-name)
 	  "." org-mind-map/dot-output "\""))
 
 (defun org-mind-map/update-message (process event)
