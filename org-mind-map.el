@@ -191,8 +191,8 @@ current buffer. To customize, see the org-mind-map group.
 
 M-x customize-group org-mind-map"
   (interactive)
-  (start-process-shell-command "s" nil (org-mind-map/command))
-  (process-send-string "s" (org-mind-map/make-dot (org-mind-map/data)))
-  (process-send-eof "s"))
+  (start-process-shell-command "org-mind-map/s" nil (org-mind-map/command))
+  (process-send-string "org-mind-map/s" (org-mind-map/make-dot (org-mind-map/data)))
+  (process-send-eof "org-mind-map/s"))
 
 ;; (global-set-key (kbd "<f4>") 'org-mind-map/write)
