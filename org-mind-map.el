@@ -193,13 +193,13 @@ used in constructing the directed graph."
 	  "}
 "))
 
-(defun org-mind-map/command ()
+(defun org-mind-map/command (name)
   "Returns the shell script that will create the correct
 file. The output file will be in the same location as the org
-file, with the same name as the buffer file name."
+file, with the same name as NAME"
   (concat org-mind-map/unflatten-command " | "
 	  org-mind-map/dot-command " -T"
-	  org-mind-map/dot-output " -K" org-mind-map/engine " -o\"" (buffer-file-name)
+	  org-mind-map/dot-output " -K" org-mind-map/engine " -o\"" name
 	  "." org-mind-map/dot-output "\""))
 
 (defun org-mind-map/update-message (process event)
@@ -211,17 +211,35 @@ file, with the same name as the buffer file name."
       (princ
        (format "Org mind map %sErrors: %s" event e)))))
 
-(defun org-mind-map/write ()
+(defun org-mind-map/write-named (name)
   "Creates a directed graph output based on the org tree in the
-current buffer. To customize, see the org-mind-map group. 
+current buffer, with name NAME. To customize, see the org-mind-map group. 
 
 M-x customize-group org-mind-map"
-  (interactive)
   (if (get-buffer "*org-mind-map/errors*")
       (kill-buffer "*org-mind-map/errors*"))
-  (let* ((p (start-process-shell-command "org-mind-map/s" "*org-mind-map/errors*" (org-mind-map/command))))
+  (let* ((p (start-process-shell-command "org-mind-map/s" "*org-mind-map/errors*" (org-mind-map/command name))))
     (process-send-string "org-mind-map/s" (org-mind-map/make-dot (org-mind-map/data)))
     (process-send-eof "org-mind-map/s")
     (set-process-sentinel p 'org-mind-map/update-message)))
+
+
+(defun org-mind-map/write ()
+  "Creates a directed graph output based on the org tree in the
+current buffer, named the same name as the current buffer. To
+customize, see the org-mind-map group.
+
+M-x customize-group org-mind-map"
+  (interactive)
+  (org-mind-map/write-named (buffer-file-name)))
+
+(defun org-mind-map/write-tree ()
+  "Creates a directed graph output based on just the current org tree. To customize, see the org-mind-map group."
+  (interactive)
+  (org-narrow-to-subtree)
+  (let* ((title (nth 4 (org-heading-components))))
+    (org-mind-map/write-named (concat (buffer-file-name) title)))
+  (widen)
+  )
 
 ;; (global-set-key (kbd "<f4>") 'org-mind-map/write)
