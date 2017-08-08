@@ -121,12 +121,15 @@ ORG-MIND-MAP/WRAP-LINE-LENGTH characters long."
   "Takes an element EL and extracts the title and tags. Then,
 formats the titles and tags so as to be usable within DOT's
 graphviz language. Uses h as the hash-map of colors."
-  (let ((title (org-mind-map/wrap-lines (org-element-property :title el)))
+  (let* ((title (org-mind-map/wrap-lines (org-element-property :title el)))
+        (color (org-element-property :OMM-COLOR el))
 	(tags (org-element-property :tags el)))
     (concat "<table>"
 	    (if (> (length tags) 0)
 		(concat
-		 "<tr><td colspan=\"" (int-to-string (length tags)) "\">" title "</td></tr>"
+		 "<tr><td colspan=\"" (int-to-string (length tags)) "\" "
+                 (if color (concat "bgcolor=\"" color "\""))
+                 ">" title "</td></tr>"
 		 "<tr>" (mapconcat (-partial 'org-mind-map/add-color h) tags "") "</tr>")
 	      (concat "<tr><td>" title "</td></tr>"))
 	    "</table>")))
@@ -234,7 +237,8 @@ M-x customize-group org-mind-map"
   (org-mind-map/write-named (buffer-file-name)))
 
 (defun org-mind-map/write-tree ()
-  "Creates a directed graph output based on just the current org tree. To customize, see the org-mind-map group."
+  "Creates a directed graph output based on just the current org
+tree. To customize, see the org-mind-map group."
   (interactive)
   (org-narrow-to-subtree)
   (let* ((title (nth 4 (org-heading-components))))

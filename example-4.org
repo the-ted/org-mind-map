@@ -1,5 +1,8 @@
 * This is an org-mode tree with tags
 ** Branch A :TagA:
+:PROPERTIES:
+:OMM-COLOR: green
+:END:
 *** Sub-Branch 1 :TagA:
 *** Sub-Branch 2 :TagA:
 *** Sub-Branch 3 :TagA:TagB:
