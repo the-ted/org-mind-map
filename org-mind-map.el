@@ -55,6 +55,7 @@
 (require 'dash)
 (require 'org)
 
+
 (defconst org-mind-map-version "0.1")
 
 (defgroup org-mind-map nil
@@ -65,6 +66,12 @@
   "Line length within graphviz nodes"
   :type 'integer
   :group 'org-mind-map)
+
+(defcustom org-mind-map/wrap-legend-line-length 45
+  "Line length of the graphviz legend"
+  :type 'integer
+  :group 'org-mind-map)
+
 
 (defcustom org-mind-map/unflatten-command "unflatten -l3"
   "Shell executable command for running the UNFLATTEN command."
@@ -95,7 +102,7 @@
           (const :tag "Radial Layout" "twopi")
           (const :tag "Circular Layout" "circo")
           (const :tag "Undirected Spring Force-Directed" "fdp")))
-  
+
 (defun org-mind-map/wrap-lines (s)
   "wraps a string S so that it can never be more than
 ORG-MIND-MAP/WRAP-LINE-LENGTH characters long."
@@ -105,6 +112,18 @@ ORG-MIND-MAP/WRAP-LINE-LENGTH characters long."
      s2
      "<br></br>")
     ))
+
+(defun org-mind-map/wrap-legend-lines (s)
+  "wraps a string S so that it can never be more than
+ORG-MIND-MAP/WRAP-LEGEND-LINE-LENGTH characters long."
+  (let* ((s2 (org-do-wrap (split-string s " ") org-mind-map/wrap-legend-line-length)))
+    (mapconcat
+     'identity
+     s2
+     "<br></br>")
+    ))
+
+
 
 (defun org-mind-map/delete-space (s)
   "Makes string S formatted to be usable within dot node names"
@@ -122,17 +141,43 @@ ORG-MIND-MAP/WRAP-LINE-LENGTH characters long."
 formats the titles and tags so as to be usable within DOT's
 graphviz language. Uses h as the hash-map of colors."
   (let* ((title (org-mind-map/wrap-lines (org-element-property :title el)))
-        (color (org-element-property :OMM-COLOR el))
+         (color (org-element-property :OMM-COLOR el))
 	(tags (org-element-property :tags el)))
     (concat "<table>"
 	    (if (> (length tags) 0)
-		(concat
-		 "<tr><td colspan=\"" (int-to-string (length tags)) "\" "
-                 (if color (concat "bgcolor=\"" color "\""))
-                 ">" title "</td></tr>"
-		 "<tr>" (mapconcat (-partial 'org-mind-map/add-color h) tags "") "</tr>")
-	      (concat "<tr><td>" title "</td></tr>"))
+		(concat "<tr><td colspan=\"" (int-to-string (length tags)) "\" ")
+              "<tr><td")
+            (if color (concat " bgcolor=\"" color "\" "))
+            ">" title "</td></tr>"
+	    (if (> (length tags) 0)
+                (concat
+                 "<tr>" (mapconcat (-partial 'org-mind-map/add-color h) tags "") "</tr>"))
 	    "</table>")))
+
+(defun org-mind-map/make-legend (h)
+  (let ((res '()))
+    (maphash (lambda (k v) (push k res)) h)
+    (if (> (length res) 0)
+        (concat
+         "{
+    Legend [shape=none, margin=0, label=<
+    <TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\" CELLPADDING=\"4\">
+     <TR>
+      <TD COLSPAN=\"2\"><B>Legend</B></TD>
+     </TR>"
+         (mapconcat 'identity
+                    (let* (result)
+                      (maphash
+                       (lambda (name color)
+                         (push (concat "<tr><td>" (org-mind-map/wrap-legend-lines name)
+                                       "</td><td bgcolor=\"" color "\">&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>")
+                               result))
+                       h)
+                      (reverse result)
+                      )
+                    "")
+
+         "</TABLE>>];}"))))
 
 (defun org-mind-map/rgb ()
   "Makes a random pastel-like RGB color"
@@ -151,13 +196,20 @@ graphviz language. Uses h as the hash-map of colors."
 		(let ((ts (org-element-property :tags hl)))
 		  ts))))))
 	 (h (make-hash-table :test 'equal))
+
 	 )
+    (org-element-map (org-element-parse-buffer 'headline) 'headline
+      (lambda (hl)
+        (let ((legend (org-element-property :OMM-LEGEND hl))
+              (color (org-element-property :OMM-COLOR hl)))
+          (if legend (puthash legend color h)))))
     (-map (lambda (x) (puthash x (org-mind-map/rgb) h)) unique-tags)
     h))
 
 (defun org-mind-map/data ()
-  "Creates a list of all of the directed pairs of headlines to be
-used in constructing the directed graph."
+  "Creates a graph (output) and tag legend (hm) of all of the
+directed pairs of headlines to be used in constructing the
+directed graph."
   (let* ((hm (org-mind-map/tags))
 	 (output
 	  (org-element-map (org-element-parse-buffer 'headline)
@@ -167,34 +219,38 @@ used in constructing the directed graph."
 		(and (eq (org-element-type parent) 'headline)
 		     (list (org-mind-map/write-tags hm parent)
 			   (org-mind-map/write-tags hm hl))))))))
-    output))
+    (list output hm)))
 
-
-(defun org-mind-map/make-dot (table)
+(defun org-mind-map/make-dot (data)
   "Creates the dot file"
-  (concat "digraph structs {
+  (let ((table (nth 0 data))
+        (legend (nth 1 data)))
+    (concat "digraph structs {
    rankdir=" org-mind-map/rankdir ";
    overlap=false;
    splines=true;
    node [shape=plaintext];\n"
-	  (mapconcat 'identity (mapcar #'(lambda (x)
-					   (concat (org-mind-map/delete-space x)
-						   " [label=<"
-						   x
-						   ">];\n"))
-				       (-distinct
-					(-flatten table)))
-		     " ")
-	  (mapconcat
-	   'identity
-	   (mapcar #'(lambda (x)
-		       (format "%s -> %s;\n"
-			       (org-mind-map/delete-space (first x))
-			       (org-mind-map/delete-space (second x))))
-		   table)
-	   " ")
-	  "}
-"))
+   (mapconcat 'identity (mapcar #'(lambda (x)
+                                    (concat (org-mind-map/delete-space x)
+                                            " [label=<"
+                                            x
+                                            ">];\n"))
+                                (-distinct
+                                 (-flatten table)))
+              " ")
+   (mapconcat
+    'identity
+    (mapcar #'(lambda (x)
+                (format "%s -> %s;\n"
+                        (org-mind-map/delete-space (first x))
+                        (org-mind-map/delete-space (second x))))
+            table)
+    " ")
+   (org-mind-map/make-legend legend)
+   "}"
+   )
+    )
+  )
 
 (defun org-mind-map/command (name)
   "Returns the shell script that will create the correct
