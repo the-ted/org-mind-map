@@ -3,7 +3,18 @@ This is an emacs package that creates graphviz directed graphs from org-mode fil
 
 # Requirements
 
-This package relies on the [Graphviz](http://graphviz.org/) suite of graphical diagramming tools. For windows (the default option), these tools are available via [cygwin](http://cygwin.com/). For linux, these tools are available through any of the popular package managers.
+This package relies on the [Graphviz](http://graphviz.org/) suite of graphical diagramming tools. 
+## windows 
+(the default option), these tools are available via [cygwin](http://cygwin.com/). 
+## linux 
+these tools are available through any of the popular package managers.
+## mac
+binarys are at the graphviz site, but for recent versions like El Capitan, Sierra and High Sierra, macports or
+homebrew are recommended.
+
+```bash
+brew install graphviz
+```
 
 This package also relies on the org-mode and dash libraries, available from melpa (M-x list-packages).
 
