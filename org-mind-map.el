@@ -84,7 +84,7 @@
   :type 'string
   :group 'org-mind-map)
 
-(defcustom org-mind-map-dot-output "pdf"
+(defcustom org-mind-map-dot-output "png"
   "Format of the DOT output.  Defaults to PDF."
   :type 'string
   :group 'org-mind-map)
