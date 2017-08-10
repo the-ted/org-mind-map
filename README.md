@@ -26,7 +26,7 @@ To install, add this code to your .emacs:
 (load "INSTALLPATH/org-mind-map.el")
 ```
 
-Then, run M-x org-mind-map/write within the org-mode file you would like to make a mind-map for. If all works as expected, a PDF file will be generated in the same directory as the org file.
+Then, run `M-x org-mind-map/write` within the org-mode file you would like to make a mind-map for. If all works as expected, a PDF file will be generated in the same directory as the org file.
 
 # Examples
 
@@ -96,6 +96,43 @@ Finally, by naming headlines across your org-mode file, as shown below, you can 
 
 Note that the interleaving is done based on the exact text of the headline, so these have to exactly match (including tags).
 
+
+## Selective Colors
+   If you would like a node to show up as a specific color, you can add the `:OMM-COLOR:` and `:OMM-LEGEND:` properties to a node. The node will be colored in, and a legend entry item will be added, as shown below:
+
+```Org
+* This is an org-mode tree with tags
+:PROPERTIES:
+:OMM-COLOR: GREEN
+:OMM-LEGEND: Legend entry
+:END:
+
+** Branch A 
+*** Sub-Branch 1 
+*** Sub-Branch 2 
+*** Sub-Branch 3 
+
+** Branch B
+
+
+** Branch C 
+** Branch D 
+* This is an org-mode tree that interleaves :TagOne:
+** Branch E
+*** Sub-Branch 3 :TagTwo:
+
+*** Sub-Branch 3 :TagOne:
+** Branch B
+** Branch C
+```
+
+ this results in this file:
+
+![example-4.org.png](example-4.org.png)
+
 # Other Options
 
-Customize the org-mind-map/engine variable to specify additional layout options (e.g. radial layouts where root nodes are in the center of the graph), and customize org-mind-map/rankdir to specify if the chart is going up-and-down or left-to-right.
+Customize the `org-mind-map/engine` variable to specify additional layout options (e.g. radial layouts where root nodes are in the center of the graph), and customize `org-mind-map/rankdir` to specify if the chart is going up-and-down or left-to-right.
+
+## Selective Export
+   Use the command `org-mind-map/write-tree` to just create a map from the current tree.
