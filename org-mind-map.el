@@ -297,7 +297,7 @@
 ;; Add a tool bar icon
 
 (define-key org-mode-map [tool-bar org-button]
-'(menu-item "Write the org-mode file to a separate PDF file." org-mind-map-write-with-prompt
+'(menu-item "Write the org-mode file mind map to disk." org-mind-map-write-with-prompt
    :image (image :type xpm :file "info.xpm")
    )
 )

@@ -26,7 +26,7 @@ To install, add this code to your .emacs:
 (load "INSTALLPATH/org-mind-map.el")
 ```
 
-Then, run `M-x org-mind-map/write` within the org-mode file you would like to make a mind-map for. If all works as expected, a PDF file will be generated in the same directory as the org file.
+Then, run `M-x org-mind-map-write` within the org-mode file you would like to make a mind-map for. If all works as expected, a PDF file will be generated in the same directory as the org file.
 
 # Examples
 
@@ -132,7 +132,7 @@ Note that the interleaving is done based on the exact text of the headline, so t
 
 # Other Options
 
-Customize the `org-mind-map/engine` variable to specify additional layout options (e.g. radial layouts where root nodes are in the center of the graph), and customize `org-mind-map/rankdir` to specify if the chart is going up-and-down or left-to-right.
+Customize the `org-mind-map-engine` variable to specify additional layout options (e.g. radial layouts where root nodes are in the center of the graph), and customize `org-mind-map-rankdir` to specify if the chart is going up-and-down or left-to-right.
 
 ## Selective Export
-   Use the command `org-mind-map/write-tree` to just create a map from the current tree.
+   Use the command `org-mind-map-write-tree` to just create a map from the current tree.

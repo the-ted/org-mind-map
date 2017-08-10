@@ -11,7 +11,6 @@
 
 ** Branch B
 
-
 ** Branch C 
 ** Branch D 
 * This is an org-mode tree that interleaves :TagOne:
