@@ -275,6 +275,11 @@
     (set-process-sentinel p 'org-mind-map-update-message)))
 
 
+(defun org-mind-map-write-with-prompt ()
+  "Prompt for an output file name to write your org mode file."
+  (interactive)
+  (org-mind-map-write-named (read-file-name "What is the file name you would like to save to?" )))
+
 (defun org-mind-map-write ()
   "Create a directed graph output based on the org tree in the current buffer, named the same name as the current buffer.  To customize, see the org-mind-map group."
   (interactive)
@@ -289,8 +294,17 @@
   (widen)
   )
 
+;; Add a tool bar icon
+
+(define-key org-mode-map [tool-bar org-button]
+'(menu-item "Write the org-mode file to a separate PDF file." org-mind-map-write-with-prompt
+   :image (image :type xpm :file "info.xpm")
+   )
+)
+
 ;; (global-set-key (kbd "<f4>") 'org-mind-map-write)
 
 (provide 'org-mind-map)
 
 ;;; org-mind-map.el ends here
+
