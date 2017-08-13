@@ -2,10 +2,14 @@
 ;; Author: Ted Wiles <theodore.wiles@gmail.com>
 ;; Keywords: orgmode, extensions, graphviz, dot
 ;; Version: 0.2
+;; URL: https://github.com/theodorewiles/org-mind-map/org-mind-map.el
+;; Package-Requires: ((emacs "24") (dash "1.8.0") (org "8.2.10"))
+
+;; This file is NOT part of GNU Emacs.
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 2, or (at your option)
+;; the Free Software Foundation; either version 3, or (at your option)
 ;; any later version.
 
 ;; This program is distributed in the hope that it will be useful,
@@ -14,9 +18,9 @@
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to the
-;; Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-;; Boston, MA 02111-1307, USA.
+;; along with GNU Emacs; see the file LICENSE.  If not, write to the
+;; Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+;; Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
 
@@ -84,7 +88,7 @@
   :type 'string
   :group 'org-mind-map)
 
-(defcustom org-mind-map-dot-output "png"
+(defcustom org-mind-map-dot-output "pdf"
   "Format of the DOT output.  Defaults to PDF."
   :type 'string
   :group 'org-mind-map)
@@ -110,8 +114,7 @@
     (mapconcat
      'identity
      s2
-     "<br></br>")
-    ))
+     "<br></br>")))
 
 (defun org-mind-map-wrap-legend-lines (s)
   "Wraps a string S so that it can never be more than ORG-MIND-MAP-WRAP-LEGEND-LINE-LENGTH characters long."
@@ -119,10 +122,7 @@
     (mapconcat
      'identity
      s2
-     "<br></br>")
-    ))
-
-
+     "<br></br>")))
 
 (defun org-mind-map-delete-space (s)
   "Make string S formatted to be usable within dot node names."
@@ -171,10 +171,8 @@
                                        "</td><td bgcolor=\"" color "\">&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>")
                                result))
                        h)
-                      (reverse result)
-                      )
+                      (reverse result))
                     "")
-
          "</TABLE>>];}"))))
 
 (defun org-mind-map-rgb ()
@@ -193,9 +191,7 @@
 	      (lambda (hl)
 		(let ((ts (org-element-property :tags hl)))
 		  ts))))))
-	 (h (make-hash-table :test 'equal))
-
-	 )
+	 (h (make-hash-table :test 'equal)))
     (org-element-map (org-element-parse-buffer 'headline) 'headline
       (lambda (hl)
         (let ((legend (org-element-property :OMM-LEGEND hl))
@@ -222,6 +218,7 @@
   (let ((table (nth 0 data))
         (legend (nth 1 data)))
     (concat "digraph structs {
+   graph [autosize=false, size=\"9,12\", resolution=100]; nodesep=0.75;
    rankdir=" org-mind-map-rankdir ";
    overlap=false;
    splines=true;
@@ -243,17 +240,18 @@
             table)
     " ")
    (org-mind-map-make-legend legend)
-   "}"
-   )
-    )
-  )
+   "}")))
 
 (defun org-mind-map-command (name)
   "Return the shell script that will create the correct file.  The output file will be in the same location as the org file, with the same name as NAME."
   (concat org-mind-map-unflatten-command " | "
 	  org-mind-map-dot-command " -T"
-	  org-mind-map-dot-output " -K" org-mind-map-engine " -o\"" name
-	  "." org-mind-map-dot-output "\""))
+	  (shell-quote-argument org-mind-map-dot-output) " -K"
+          (shell-quote-argument org-mind-map-engine) " -o"
+          (shell-quote-argument (concat
+                                 name
+                                 "." org-mind-map-dot-output ""
+                                 ))))
 
 (defun org-mind-map-update-message (process event)
   "Write an update message on the output of running org-mind-map based on PROCESS and EVENT."
@@ -274,33 +272,32 @@
     (process-send-eof "org-mind-map-s")
     (set-process-sentinel p 'org-mind-map-update-message)))
 
-
+;;;###autoload
 (defun org-mind-map-write-with-prompt ()
   "Prompt for an output file name to write your org mode file."
   (interactive)
   (org-mind-map-write-named (read-file-name "What is the file name you would like to save to?" )))
 
+;;;###autoload
 (defun org-mind-map-write ()
   "Create a directed graph output based on the org tree in the current buffer, named the same name as the current buffer.  To customize, see the org-mind-map group."
   (interactive)
   (org-mind-map-write-named (buffer-file-name)))
 
+;;;###autoload
 (defun org-mind-map-write-tree ()
   "Create a directed graph output based on just the current org tree.  To customize, see the org-mind-map group."
   (interactive)
   (org-narrow-to-subtree)
   (let* ((title (nth 4 (org-heading-components))))
     (org-mind-map-write-named (concat (buffer-file-name) title)))
-  (widen)
-  )
+  (widen))
 
 ;; Add a tool bar icon
-
-(define-key org-mode-map [tool-bar org-button]
-'(menu-item "Write the org-mode file mind map to disk." org-mind-map-write-with-prompt
-   :image (image :type xpm :file "info.xpm")
-   )
-)
+;; (define-key org-mode-map [tool-bar org-button]
+;; '(menu-item "Write the org-mode file mind map to disk." org-mind-map-write-with-prompt
+;;    :image (image :type xpm :file "info.xpm")
+;;    ))
 
 ;; (global-set-key (kbd "<f4>") 'org-mind-map-write)
 
