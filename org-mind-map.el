@@ -265,11 +265,13 @@
 
 (defun org-mind-map-write-named (name)
   "Create a directed graph output based on the org tree in the current buffer, with name NAME.  To customize, see the org-mind-map group."
-  (if (get-buffer "*org-mind-map-errors*")
+  (message (org-mind-map-command name))
+  (message (org-mind-map-make-dot (org-mind-map-data)) "%s")  (if (get-buffer "*org-mind-map-errors*")
       (kill-buffer "*org-mind-map-errors*"))
   (let* ((p (start-process-shell-command "org-mind-map-s" "*org-mind-map-errors*" (org-mind-map-command name))))
-    (process-send-string "org-mind-map-s" (org-mind-map-make-dot (org-mind-map-data)))
-    (process-send-eof "org-mind-map-s")
+    (process-send-string p (org-mind-map-make-dot (org-mind-map-data)))
+    (process-send-string p "\n")
+    (process-send-eof p)
     (set-process-sentinel p 'org-mind-map-update-message)))
 
 ;;;###autoload
