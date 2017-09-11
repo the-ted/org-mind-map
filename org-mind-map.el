@@ -137,7 +137,8 @@
 
 (defun org-mind-map-write-tags (h el)
   "Use H as the hash-map of colors and takes an element EL and extracts the title and tags.  Then, formats the titles and tags so as to be usable within DOT's graphviz language."
-  (let* ((title (org-mind-map-wrap-lines (org-element-property :title el)))
+  (let* ((wrapped-title (org-mind-map-wrap-lines (org-element-property :title el)))
+         (title (replace-regexp-in-string "&" "&amp;" title nil t))
          (color (org-element-property :OMM-COLOR el))
 	(tags (org-element-property :tags el)))
     (concat "<table>"
