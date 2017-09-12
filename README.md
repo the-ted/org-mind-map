@@ -130,6 +130,46 @@ Note that the interleaving is done based on the exact text of the headline, so t
 
 ![example-4.org.png](example-4.org.png)
 
+## Links
+   You can also draw edges between nodes by including links to headlines in your Org mode files. Links will be drawn from the parent heading to  the heading of the destination link. This works as shown below:
+
+```Org
+* This is an org-mode tree with tags
+:PROPERTIES:
+:OMM-COLOR: GREEN
+:OMM-LEGEND: Legend entry
+:END:
+
+** Branch A 
+*** Sub-Branch 1 
+*** Sub-Branch 2 
+*** Sub-Branch 3 
+
+** Branch B
+
+
+** Branch C 
+** Branch D 
+* Here is another tree
+** Branch One
+** Branch Two
+   [[Branch C]]
+** Branch Three
+
+   [[Branch One][Another link]]
+
+   [[Sub-Branch 1][Yet Another Link]]
+```
+
+ this results in this file:
+
+![example-5.org.png](example-5.org.png)
+
+
+# Thanks!
+
+http://pages.sachachua.com/evil-plans/
+
 # Other Options
 
 Customize the `org-mind-map-engine` variable to specify additional layout options (e.g. radial layouts where root nodes are in the center of the graph), and customize `org-mind-map-rankdir` to specify if the chart is going up-and-down or left-to-right.

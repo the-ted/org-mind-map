@@ -1,7 +1,7 @@
 ;;; org-mind-map.el --- Creates a directed graph from org-mode files
 ;; Author: Ted Wiles <theodore.wiles@gmail.com>
 ;; Keywords: orgmode, extensions, graphviz, dot
-;; Version: 0.2
+;; Version: 0.3
 ;; URL: https://github.com/theodorewiles/org-mind-map/org-mind-map.el
 ;; Package-Requires: ((emacs "24") (dash "1.8.0") (org "8.2.10"))
 
@@ -135,7 +135,8 @@
 
 (defun org-mind-map-write-tags (h el)
   "Use H as the hash-map of colors and takes an element EL and extracts the title and tags.  Then, formats the titles and tags so as to be usable within DOT's graphviz language."
-  (let* ((wrapped-title (org-mind-map-wrap-lines (org-element-property :title el)))
+  (let* ((ts (org-element-property :title el))
+	 (wrapped-title (org-mind-map-wrap-lines (if (listp ts) (first ts) ts)))
          (title (replace-regexp-in-string "&" "&amp;" wrapped-title nil t))
          (color (org-element-property :OMM-COLOR el))
 	(tags (org-element-property :tags el)))
@@ -149,6 +150,50 @@
                 (concat
                  "<tr>" (mapconcat (-partial 'org-mind-map-add-color h) tags "") "</tr>"))
 	    "</table>")))
+
+(defun first-headline (e)
+  "Figure out the first headline within element E."
+  (let* ((parent (org-element-property :parent e)))
+    (if parent
+        (if (eq (org-element-type parent) 'headline)
+            parent
+          (first-headline parent))
+      nil)))
+
+(defun valid-link? (e)
+  "Is E at a valid link?"
+  (condition-case ex
+      (let* ((org-link-search-inhibit-query t)
+             (l (org-element-property :path e))
+             )
+        (save-excursion
+          (org-link-search l)
+          t))
+    ('error nil)))
+
+
+(defun destination-headline (e)
+  "Figure out where the link in E is pointing to."
+  (let* ((l (org-element-property :path e))
+         (org-link-search-inhibit-query t))
+       (save-excursion
+         (org-open-link-from-string (concat "[[" l "]]"))
+         (org-element-at-point))))
+
+(defun org-mind-map-get-links (tags)
+  "Make a list of links with the headline they are within and
+their destination. Pass TAGS in order to keep the hash-map of
+TAGS consistent."
+  (let* ((hm tags)
+         (output
+	  (org-element-map (org-element-parse-buffer 'object)
+	      'link
+	    (lambda (l)
+              (if (valid-link? l)
+                  (list (org-mind-map-write-tags hm (first-headline l))
+                        (org-mind-map-write-tags hm (destination-headline l))))))))
+    output))
+
 
 (defun org-mind-map-make-legend (h)
   "Make a legend using the hash-map H."
@@ -210,7 +255,8 @@
 		(and (eq (org-element-type parent) 'headline)
 		     (list (org-mind-map-write-tags hm parent)
 			   (org-mind-map-write-tags hm hl))))))))
-    (list output hm)))
+    (list (append output (org-mind-map-get-links hm))
+          hm)))
 
 (defun org-mind-map-make-dot (data)
   "Create the dot file from DATA."
@@ -293,6 +339,17 @@
   (let* ((title (nth 4 (org-heading-components))))
     (org-mind-map-write-named (concat (buffer-file-name) title)))
   (widen))
+
+
+(defun org-mind-map-write-current-tree ()
+  "Create a directed graph output based on just the current org tree."
+  (interactive)
+  (save-restriction
+   (outline-up-heading 100)
+   (org-narrow-to-subtree)
+   (let* ((title (nth 4 (org-heading-components))))
+     (org-mind-map-write-named "current"))
+   (widen)))
 
 ;; Add a tool bar icon
 ;; (define-key org-mode-map [tool-bar org-button]
