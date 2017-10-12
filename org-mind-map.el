@@ -280,8 +280,8 @@ TAGS consistent."
     'identity
     (mapcar #'(lambda (x)
                 (format "%s -> %s;\n"
-                        (org-mind-map-dot-node-name (first x))
-                        (org-mind-map-dot-node-name (second x))))
+                        (org-mind-map-dot-node-name (nth 0 x))
+                        (org-mind-map-dot-node-name (nth 1 x))))
             table)
     " ")
    (org-mind-map-make-legend legend)
