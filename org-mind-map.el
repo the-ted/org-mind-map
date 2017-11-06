@@ -94,13 +94,15 @@
   :group 'org-mind-map)
 
 (defcustom org-mind-map-rankdir "LR"
-  "Sets the order of the resulting graph.  LR is left-to-right, and TB is top-to-bottom."
+  "Sets the order of the resulting graph.  
+LR is left-to-right, and TB is top-to-bottom."
   :type '(choice
           (const :tag "Left to right" "LR")
           (const :tag "Top to bottom" "TB")))
 
 (defcustom org-mind-map-engine "dot"
-  "Sets the layout engine used in your graphs.  See the graphviz user manual for description of these options."
+  "Sets the layout engine used in your graphs.  
+See the graphviz user manual for description of these options."
   :type '(choice
           (const :tag "Directed Graph" "dot")
           (const :tag "Undirected Spring Graph" "neato")
@@ -111,18 +113,12 @@
 (defun org-mind-map-wrap-lines (s)
   "Wraps a string S so that it can never be more than ORG-MIND-MAP-WRAP-LINE-LENGTH characters long."
   (let* ((s2 (org-do-wrap (split-string s " ") org-mind-map-wrap-line-length)))
-    (mapconcat
-     'identity
-     s2
-     "<br></br>")))
+    (mapconcat 'identity s2 "<br></br>")))
 
 (defun org-mind-map-wrap-legend-lines (s)
   "Wraps a string S so that it can never be more than ORG-MIND-MAP-WRAP-LEGEND-LINE-LENGTH characters long."
   (let* ((s2 (org-do-wrap (split-string s " ") org-mind-map-wrap-legend-line-length)))
-    (mapconcat
-     'identity
-     s2
-     "<br></br>")))
+    (mapconcat 'identity s2 "<br></br>")))
 
 (defun org-mind-map-dot-node-name (s)
   "Make string S formatted to be usable within dot node names."
@@ -134,12 +130,13 @@
     (concat "<td bgcolor=\"" color "\">" tag "</td>")))
 
 (defun org-mind-map-write-tags (h el)
-  "Use H as the hash-map of colors and takes an element EL and extracts the title and tags.  Then, formats the titles and tags so as to be usable within DOT's graphviz language."
+  "Use H as the hash-map of colors and takes an element EL and extracts the title and tags.  
+Then, formats the titles and tags so as to be usable within DOT's graphviz language."
   (let* ((ts (org-element-property :title el))
 	 (wrapped-title (org-mind-map-wrap-lines (if (listp ts) (first ts) ts)))
          (title (replace-regexp-in-string "&" "&amp;" wrapped-title nil t))
          (color (org-element-property :OMM-COLOR el))
-	(tags (org-element-property :tags el)))
+	 (tags (org-element-property :tags el)))
     (concat "<table>"
 	    (if (> (length tags) 0)
 		(concat "<tr><td colspan=\"" (int-to-string (length tags)) "\" ")
@@ -164,8 +161,7 @@
   "Is E at a valid link?"
   (condition-case ex
       (let* ((org-link-search-inhibit-query t)
-             (l (org-element-property :path e))
-             )
+             (l (org-element-property :path e)))
         (save-excursion
           (org-link-search l)
           t))
@@ -176,9 +172,9 @@
   "Figure out where the link in E is pointing to."
   (let* ((l (org-element-property :path e))
          (org-link-search-inhibit-query t))
-       (save-excursion
-         (org-open-link-from-string (concat "[[" l "]]"))
-         (org-element-at-point))))
+    (save-excursion
+      (org-open-link-from-string (concat "[[" l "]]"))
+      (org-element-at-point))))
 
 (defun org-mind-map-get-links (tags)
   "Make a list of links with the headline they are within and
@@ -222,9 +218,9 @@ TAGS consistent."
 (defun org-mind-map-rgb ()
   "Make a random pastel-like RGB color."
   (concat "#"
-   (format "%x" (+ 125 (random (- 255 125))))
-   (format "%x" (+ 125 (random (- 255 125))))
-   (format "%x" (+ 125 (random (- 255 125))))))
+	  (format "%x" (+ 125 (random (- 255 125))))
+	  (format "%x" (+ 125 (random (- 255 125))))
+	  (format "%x" (+ 125 (random (- 255 125))))))
 
 (defun org-mind-map-tags ()
   "Return a hash map of tags in the org file mapped to random colors."
@@ -232,9 +228,7 @@ TAGS consistent."
 	  (-distinct
 	   (-flatten
 	    (org-element-map (org-element-parse-buffer 'headline) 'headline
-	      (lambda (hl)
-		(let ((ts (org-element-property :tags hl)))
-		  ts))))))
+	      (lambda (hl) (org-element-property :tags hl))))))
 	 (h (make-hash-table :test 'equal)))
     (org-element-map (org-element-parse-buffer 'headline) 'headline
       (lambda (hl)
@@ -245,7 +239,7 @@ TAGS consistent."
     h))
 
 (defun org-mind-map-data ()
-  "Create a graph (output) and tag legend (hm) of all of the directed pairs of headlines to be used in constructing the directed graph."
+  "Create graph & tag legend of all directed pairs of headlines for constructing the digraph."
   (let* ((hm (org-mind-map-tags))
 	 (output
 	  (org-element-map (org-element-parse-buffer 'headline)
@@ -270,50 +264,45 @@ TAGS consistent."
    node [shape=plaintext];\n"
    (mapconcat 'identity (mapcar #'(lambda (x)
                                     (concat (org-mind-map-dot-node-name x)
-                                            " [label=<"
-                                            x
-                                            ">];\n"))
-                                (-distinct
-                                 (-flatten table)))
+                                            " [label=<" x ">];\n"))
+                                (-distinct (-flatten table)))
               " ")
-   (mapconcat
-    'identity
-    (mapcar #'(lambda (x)
-                (format "%s -> %s;\n"
-                        (org-mind-map-dot-node-name (nth 0 x))
-                        (org-mind-map-dot-node-name (nth 1 x))))
-            table)
-    " ")
+   (mapconcat 'identity (mapcar #'(lambda (x)
+				    (format "%s -> %s;\n"
+					    (org-mind-map-dot-node-name (nth 0 x))
+					    (org-mind-map-dot-node-name (nth 1 x))))
+				table)
+	      " ")
    (org-mind-map-make-legend legend)
    "}")))
 
 (defun org-mind-map-command (name)
-  "Return the shell script that will create the correct file.  The output file will be in the same location as the org file, with the same name as NAME."
+  "Return the shell script that will create the correct file.  
+The output file will be in the same location as the org file, with the same name as NAME."
   (concat org-mind-map-unflatten-command " | "
 	  org-mind-map-dot-command " -T"
 	  (shell-quote-argument org-mind-map-dot-output) " -K"
           (shell-quote-argument org-mind-map-engine) " -o"
-          (shell-quote-argument (concat
-                                 name
-                                 "." org-mind-map-dot-output ""
-                                 ))))
+          (shell-quote-argument (concat name "." org-mind-map-dot-output ""))))
 
 (defun org-mind-map-update-message (process event)
   "Write an update message on the output of running org-mind-map based on PROCESS and EVENT."
   (let* ((e (with-current-buffer "*org-mind-map-errors*"
-              (buffer-string))))
+	      (buffer-string))))
     (if (string= e "")
-        (princ
-         (format "Org mind map %s" event))
-      (princ
-       (format "Org mind map %sErrors: %s" event e)))))
+        (princ (format "Org mind map %s" event))
+      (princ (format "Org mind map %sErrors: %s" event e)))))
 
 (defun org-mind-map-write-named (name)
-  "Create a directed graph output based on the org tree in the current buffer, with name NAME.  To customize, see the org-mind-map group."
+  "Create a directed graph output based on the org tree in the current buffer, with name NAME.  
+To customize, see the org-mind-map group."
   (message (org-mind-map-command name))
-  (message (org-mind-map-make-dot (org-mind-map-data)) "%s")  (if (get-buffer "*org-mind-map-errors*")
+  (message (org-mind-map-make-dot (org-mind-map-data)) "%s")
+  (if (get-buffer "*org-mind-map-errors*")
       (kill-buffer "*org-mind-map-errors*"))
-  (let* ((p (start-process-shell-command "org-mind-map-s" "*org-mind-map-errors*" (org-mind-map-command name))))
+  (let* ((p (start-process-shell-command
+	     "org-mind-map-s" "*org-mind-map-errors*"
+	     (org-mind-map-command name))))
     (process-send-string p (org-mind-map-make-dot (org-mind-map-data)))
     (process-send-string p "\n")
     (process-send-eof p)
@@ -323,33 +312,36 @@ TAGS consistent."
 (defun org-mind-map-write-with-prompt ()
   "Prompt for an output file name to write your org mode file."
   (interactive)
-  (org-mind-map-write-named (read-file-name "What is the file name you would like to save to?" )))
+  (org-mind-map-write-named
+   (read-file-name "What is the file name you would like to save to?" )))
 
 ;;;###autoload
 (defun org-mind-map-write ()
-  "Create a directed graph output based on the org tree in the current buffer, named the same name as the current buffer.  To customize, see the org-mind-map group."
+  "Create a digraph based on the org tree in the current buffer.
+The digraph will be named the same name as the current buffer.
+To customize, see the org-mind-map group."
   (interactive)
   (org-mind-map-write-named (buffer-file-name)))
 
 ;;;###autoload
 (defun org-mind-map-write-tree ()
-  "Create a directed graph output based on just the current org tree.  To customize, see the org-mind-map group."
+  "Create a directed graph output based on just the current org tree.
+To customize, see the org-mind-map group."
   (interactive)
   (org-narrow-to-subtree)
   (let* ((title (nth 4 (org-heading-components))))
     (org-mind-map-write-named (concat (buffer-file-name) title)))
   (widen))
 
-
 (defun org-mind-map-write-current-tree ()
   "Create a directed graph output based on just the current org tree."
   (interactive)
   (save-restriction
-   (outline-up-heading 100)
-   (org-narrow-to-subtree)
-   (let* ((title (nth 4 (org-heading-components))))
-     (org-mind-map-write-named "current"))
-   (widen)))
+    (outline-up-heading 100)
+    (org-narrow-to-subtree)
+    (let* ((title (nth 4 (org-heading-components))))
+      (org-mind-map-write-named "current"))
+    (widen)))
 
 ;; Add a tool bar icon
 ;; (define-key org-mode-map [tool-bar org-button]
