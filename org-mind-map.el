@@ -148,16 +148,16 @@ Then, formats the titles and tags so as to be usable within DOT's graphviz langu
                  "<tr>" (mapconcat (-partial 'org-mind-map-add-color h) tags "") "</tr>"))
 	    "</table>")))
 
-(defun first-headline (e)
+(defun org-mind-map-first-headline (e)
   "Figure out the first headline within element E."
   (let* ((parent (org-element-property :parent e)))
     (if parent
         (if (eq (org-element-type parent) 'headline)
             parent
-          (first-headline parent))
+          (org-mind-map-first-headline parent))
       nil)))
 
-(defun valid-link? (e)
+(defun org-mind-map-valid-link? (e)
   "Is E at a valid link?"
   (condition-case ex
       (let* ((org-link-search-inhibit-query t)
@@ -168,7 +168,7 @@ Then, formats the titles and tags so as to be usable within DOT's graphviz langu
     ('error nil)))
 
 
-(defun destination-headline (e)
+(defun org-mind-map-destination-headline (e)
   "Figure out where the link in E is pointing to."
   (let* ((l (org-element-property :path e))
          (org-link-search-inhibit-query t))
@@ -185,9 +185,9 @@ TAGS consistent."
 	  (org-element-map (org-element-parse-buffer 'object)
 	      'link
 	    (lambda (l)
-              (if (valid-link? l)
-                  (list (org-mind-map-write-tags hm (first-headline l))
-                        (org-mind-map-write-tags hm (destination-headline l))))))))
+              (if (org-mind-map-valid-link? l)
+                  (list (org-mind-map-write-tags hm (org-mind-map-first-headline l))
+                        (org-mind-map-write-tags hm (org-mind-map-destination-headline l))))))))
     output))
 
 
