@@ -122,13 +122,14 @@ See the graphviz user manual for description of these options."
 
 (defun org-mind-map-dot-node-name (s)
   "Make string S formatted to be usable within dot node names."
-  (replace-regexp-in-string "[^A-z0-9]" "" s nil t))
+  (replace-regexp-in-string "[^A-Za-z0-9]" "" s nil t))
 
 (defun org-mind-map-add-color (h tag)
   "Add the color text H after tag TAG."
   (let* ((color (gethash tag h)))
     (concat "<td bgcolor=\"" color "\">" tag "</td>")))
 
+;; TODO: make this more flexible. Check for :OMM-NOTE-FMT property and add node properties.
 (defun org-mind-map-write-tags (h el)
   "Use H as the hash-map of colors and takes an element EL and extracts the title and tags.  
 Then, formats the titles and tags so as to be usable within DOT's graphviz language."
@@ -137,7 +138,8 @@ Then, formats the titles and tags so as to be usable within DOT's graphviz langu
          (title (replace-regexp-in-string "&" "&amp;" wrapped-title nil t))
          (color (org-element-property :OMM-COLOR el))
 	 (tags (org-element-property :tags el)))
-    (concat "<table>"
+    ;; Factor out following code as a separate function that is called if there are no node properties?
+    (concat "[label=<<table>"
 	    (if (> (length tags) 0)
 		(concat "<tr><td colspan=\"" (int-to-string (length tags)) "\" ")
               "<tr><td")
@@ -146,7 +148,7 @@ Then, formats the titles and tags so as to be usable within DOT's graphviz langu
 	    (if (> (length tags) 0)
                 (concat
                  "<tr>" (mapconcat (-partial 'org-mind-map-add-color h) tags "") "</tr>"))
-	    "</table>")))
+	    "</table>>];\n")))
 
 (defun org-mind-map-first-headline (e)
   "Figure out the first headline within element E."
@@ -248,9 +250,10 @@ TAGS consistent."
 	      (let ((parent (org-element-property :parent hl )))
 		(and (eq (org-element-type parent) 'headline)
 		     (list (org-mind-map-write-tags hm parent)
-			   (org-mind-map-write-tags hm hl))))))))
-    (list (append output (org-mind-map-get-links hm))
-          hm)))
+			   (org-mind-map-write-tags hm hl)
+			   ;; TODO: collect edge properties
+			   )))))))
+    (list (append output (org-mind-map-get-links hm)) hm)))
 
 (defun org-mind-map-make-dot (data)
   "Create the dot file from DATA."
@@ -262,16 +265,18 @@ TAGS consistent."
    overlap=false;
    splines=true;
    node [shape=plaintext];\n"
-   (mapconcat 'identity (mapcar #'(lambda (x)
-                                    (concat (org-mind-map-dot-node-name x)
-                                            " [label=<" x ">];\n"))
-                                (-distinct (-flatten table)))
+   (mapconcat 'identity (mapcar
+			 #'(lambda (x) (concat (org-mind-map-dot-node-name x) x))
+			 (-distinct (-flatten table)))
               " ")
-   (mapconcat 'identity (mapcar #'(lambda (x)
-				    (format "%s -> %s;\n"
-					    (org-mind-map-dot-node-name (nth 0 x))
-					    (org-mind-map-dot-node-name (nth 1 x))))
-				table)
+   (mapconcat 'identity
+	      (mapcar #'(lambda (x)
+			  (format "%s -> %s;\n"
+				  (org-mind-map-dot-node-name (nth 0 x))
+				  (org-mind-map-dot-node-name (nth 1 x))
+				  ;; TODO: add edge properties
+				  ))
+		      table)
 	      " ")
    (org-mind-map-make-legend legend)
    "}")))
