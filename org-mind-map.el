@@ -331,42 +331,42 @@ and print the dotfile to the *Messages* buffer or to a file if DEBUG is a filena
       (set-process-sentinel p 'org-mind-map-update-message))))
 
 ;;;###autoload
-(defun org-mind-map-write-with-prompt (filename)
+(defun org-mind-map-write-with-prompt nil
   "Prompt for an output FILENAME (without extension) to write your .pdf and .dot files."
-  (interactive (list (read-file-name
-		      "What is the file name you would like to save to?")))
-  (org-mind-map-write-named filename (concat filename ".dot")))
+  (let ((filename (read-file-name "What is the file name you would like to save to?")))
+    (org-mind-map-write-named filename (concat filename ".dot"))))
 
 ;;;###autoload
-(defun org-mind-map-write (debugp)
+(defun org-mind-map-write (&optional promptp)
   "Create a digraph based on the org tree in the current buffer.
 The digraph will be named the same name as the current buffer.
 To customize, see the org-mind-map group.
-If called with prefix arg (or DEBUGP non-nil), then print command and dotfile to *Messages* buffer."
+If called with prefix arg (or PROMPTP is non-nil), then call `org-mind-map-write-with-prompt'."
   (interactive "P")
-  (org-mind-map-write-named (buffer-file-name) debugp))
+  (if promptp (org-mind-map-write-with-prompt)
+    (org-mind-map-write-named (buffer-file-name))))
 
 ;;;###autoload
-(defun org-mind-map-write-tree (debugp)
+(defun org-mind-map-write-tree (&optional promptp)
   "Create a directed graph output based on just the current org tree.
 To customize, see the org-mind-map group.
-If called with prefix arg (or DEBUGP non-nil), then print command and dotfile to *Messages* buffer."
+If called with prefix arg (or PROMPTP is non-nil), then call `org-mind-map-write-with-prompt'."
   (interactive "P")
   (org-narrow-to-subtree)
-  (let* ((title (nth 4 (org-heading-components))))
-    (org-mind-map-write-named (concat (buffer-file-name) title) debugp))
+  (if promptp (org-mind-map-write-with-prompt)
+    (org-mind-map-write-named (concat (buffer-file-name (nth 4 (org-heading-components))))))
   (widen))
 
-(defun org-mind-map-write-current-tree (debugp)
+(defun org-mind-map-write-current-tree (&optional promptp)
   "Create a directed graph output based on just the current org tree.
-If called with prefix arg (or DEBUGP non-nil), then print command and dotfile to *Messages* buffer."
+If called with prefix arg (or PROMPTP is non-nil), then call `org-mind-map-write-with-prompt'."
   (interactive "P")
   (save-restriction
     (if (> (funcall outline-level) 1)
 	(outline-up-heading 100))
     (org-narrow-to-subtree)
-    (let* ((title (nth 4 (org-heading-components))))
-      (org-mind-map-write-named "current" debugp))
+    (if promptp (org-mind-map-write-with-prompt)
+      (org-mind-map-write-named (concat (buffer-file-name (nth 4 (org-heading-components))))))
     (widen)))
 
 ;; Add a tool bar icon
