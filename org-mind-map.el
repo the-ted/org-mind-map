@@ -326,13 +326,12 @@ If DEBUGP is non-nil, then print command and dotfile to *Messages* buffer."
     (set-process-sentinel p 'org-mind-map-update-message)))
 
 ;;;###autoload
-(defun org-mind-map-write-with-prompt (&optional debugp)
-  "Prompt for an output file name to write your org mode file.
+(defun org-mind-map-write-with-prompt (filename &optional debugp)
+  "Prompt for an output FILENAME to write your pdf file.
 If called with prefix arg (or DEBUGP non-nil), then print command and dotfile to *Messages* buffer."
-  (interactive "P")
-  (org-mind-map-write-named
-   (read-file-name "What is the file name you would like to save to?")
-   debugp))
+  (interactive (list (read-file-name "What is the file name you would like to save to?")
+		     current-prefix-arg))
+  (org-mind-map-write-named filename debugp))
 
 ;;;###autoload
 (defun org-mind-map-write (debugp)
