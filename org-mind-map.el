@@ -129,6 +129,19 @@ See the graphviz user manual for description of these options."
   (let* ((color (gethash tag h)))
     (concat "<td bgcolor=\"" color "\">" tag "</td>")))
 
+;; (defun org-mind-map-tags-default (title tags props color h)
+;;   ""
+;;   (concat "[label=<<table>"
+;; 	  (if (> (length tags) 0)
+;; 	      (concat "<tr><td colspan=\"" (int-to-string (length tags)) "\" ")
+;; 	    "<tr><td")
+;; 	  (if color (concat " bgcolor=\"" color "\" "))
+;; 	  ">" title "</td></tr>"
+;; 	  (if (> (length tags) 0)
+;; 	      (concat
+;; 	       "<tr>" (mapconcat (-partial 'org-mind-map-add-color h) tags "") "</tr>"))
+;; 	  "</table>>];\n"))
+
 ;; TODO: make this more flexible. Check for :OMM-NOTE-FMT property and add node properties.
 (defun org-mind-map-write-tags (h el)
   "Use H as the hash-map of colors and takes an element EL and extracts the title and tags.  
@@ -139,6 +152,7 @@ Then, formats the titles and tags so as to be usable within DOT's graphviz langu
          (color (org-element-property :OMM-COLOR el))
 	 (tags (org-element-property :tags el)))
     ;; Factor out following code as a separate function that is called if there are no node properties?
+    ;;(funcall fn title tags color)
     (concat "[label=<<table>"
 	    (if (> (length tags) 0)
 		(concat "<tr><td colspan=\"" (int-to-string (length tags)) "\" ")
@@ -182,15 +196,12 @@ Then, formats the titles and tags so as to be usable within DOT's graphviz langu
   "Make a list of links with the headline they are within and
 their destination. Pass TAGS in order to keep the hash-map of
 TAGS consistent."
-  (let* ((hm tags)
-         (output
-	  (org-element-map (org-element-parse-buffer 'object)
-	      'link
-	    (lambda (l)
-              (if (org-mind-map-valid-link? l)
-                  (list (org-mind-map-write-tags hm (org-mind-map-first-headline l))
-                        (org-mind-map-write-tags hm (org-mind-map-destination-headline l))))))))
-    output))
+  (org-element-map (org-element-parse-buffer 'object)
+      'link
+    (lambda (l)
+      (if (org-mind-map-valid-link? l)
+	  (list (org-mind-map-write-tags tags (org-mind-map-first-headline l))
+		(org-mind-map-write-tags tags (org-mind-map-destination-headline l)))))))
 
 
 (defun org-mind-map-make-legend (h)
