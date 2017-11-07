@@ -309,29 +309,33 @@ The output file will be in the same location as the org file, with the same name
         (princ (format "Org mind map %s" event))
       (princ (format "Org mind map %sErrors: %s" event e)))))
 
-(defun org-mind-map-write-named (name &optional debugp)
+(defun org-mind-map-write-named (name &optional debug)
   "Create a directed graph output based on the org tree in the current buffer, with name NAME.  
 To customize, see the org-mind-map group.
-If DEBUGP is non-nil, then print command and dotfile to *Messages* buffer."
-  (if debugp (progn (message (org-mind-map-command name))
-		    (message (org-mind-map-make-dot (org-mind-map-data)) "%s")))
-  (if (get-buffer "*org-mind-map-errors*")
-      (kill-buffer "*org-mind-map-errors*"))
-  (let* ((p (start-process-shell-command
-	     "org-mind-map-s" "*org-mind-map-errors*"
-	     (org-mind-map-command name))))
-    (process-send-string p (org-mind-map-make-dot (org-mind-map-data)))
-    (process-send-string p "\n")
-    (process-send-eof p)
-    (set-process-sentinel p 'org-mind-map-update-message)))
+If DEBUG is non-nil, then print the dot command to the *Messages* buffer,
+and print the dotfile to the *Messages* buffer or to a file if DEBUG is a filename."
+  (let ((dot (org-mind-map-make-dot (org-mind-map-data))))
+    (if debug
+	(progn (message (org-mind-map-command name))
+	       (if (stringp debug)
+		   (with-temp-file debug (insert dot))
+		 (message dot "%s"))))
+    (if (get-buffer "*org-mind-map-errors*")
+	(kill-buffer "*org-mind-map-errors*"))
+    (let* ((p (start-process-shell-command
+	       "org-mind-map-s" "*org-mind-map-errors*"
+	       (org-mind-map-command name))))
+      (process-send-string p dot)
+      (process-send-string p "\n")
+      (process-send-eof p)
+      (set-process-sentinel p 'org-mind-map-update-message))))
 
 ;;;###autoload
-(defun org-mind-map-write-with-prompt (filename &optional debugp)
-  "Prompt for an output FILENAME to write your pdf file.
-If called with prefix arg (or DEBUGP non-nil), then print command and dotfile to *Messages* buffer."
-  (interactive (list (read-file-name "What is the file name you would like to save to?")
-		     current-prefix-arg))
-  (org-mind-map-write-named filename debugp))
+(defun org-mind-map-write-with-prompt (filename)
+  "Prompt for an output FILENAME (without extension) to write your .pdf and .dot files."
+  (interactive (list (read-file-name
+		      "What is the file name you would like to save to?")))
+  (org-mind-map-write-named filename (concat filename ".dot")))
 
 ;;;###autoload
 (defun org-mind-map-write (debugp)
