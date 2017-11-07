@@ -362,7 +362,8 @@ If called with prefix arg (or DEBUGP non-nil), then print command and dotfile to
 If called with prefix arg (or DEBUGP non-nil), then print command and dotfile to *Messages* buffer."
   (interactive "P")
   (save-restriction
-    (outline-up-heading 100)
+    (if (> (funcall outline-level) 1)
+	(outline-up-heading 100))
     (org-narrow-to-subtree)
     (let* ((title (nth 4 (org-heading-components))))
       (org-mind-map-write-named "current" debugp))
