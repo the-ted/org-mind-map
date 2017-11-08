@@ -179,7 +179,7 @@ Then, formats the titles and tags so as to be usable within DOT's graphviz langu
       (let* ((org-link-search-inhibit-query t)
              (l (org-element-property :path e)))
         (save-excursion
-          (org-link-search l)
+	  (org-link-search l)
           t))
     ('error nil)))
 
@@ -362,8 +362,7 @@ If called with prefix arg (or PROMPTP is non-nil), then call `org-mind-map-write
 If called with prefix arg (or PROMPTP is non-nil), then call `org-mind-map-write-with-prompt'."
   (interactive "P")
   (save-restriction
-    (if (> (funcall outline-level) 1)
-	(outline-up-heading 100))
+    (ignore-errors (outline-up-heading 100))
     (org-narrow-to-subtree)
     (if promptp (org-mind-map-write-with-prompt)
       (org-mind-map-write-named (concat (buffer-file-name (nth 4 (org-heading-components))))))
