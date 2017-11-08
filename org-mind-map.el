@@ -251,7 +251,7 @@ TAGS consistent."
     (-map (lambda (x) (puthash x (org-mind-map-rgb) h)) unique-tags)
     h))
 
-(defun org-mind-map-data ()
+(defun org-mind-map-data (&optional linksp)
   "Create graph & tag legend of all directed pairs of headlines for constructing the digraph."
   (let* ((hm (org-mind-map-tags))
 	 (output
@@ -264,7 +264,7 @@ TAGS consistent."
 			   (org-mind-map-write-tags hm hl)
 			   ;; TODO: collect edge properties
 			   )))))))
-    (list (append output (org-mind-map-get-links hm)) hm)))
+    (list (append output (if linksp (org-mind-map-get-links hm))) hm)))
 
 (defun org-mind-map-make-dot (data)
   "Create the dot file from DATA."
@@ -309,12 +309,12 @@ The output file will be in the same location as the org file, with the same name
         (princ (format "Org mind map %s" event))
       (princ (format "Org mind map %sErrors: %s" event e)))))
 
-(defun org-mind-map-write-named (name &optional debug)
+(defun org-mind-map-write-named (name &optional debug linksp)
   "Create a directed graph output based on the org tree in the current buffer, with name NAME.  
 To customize, see the org-mind-map group.
 If DEBUG is non-nil, then print the dot command to the *Messages* buffer,
 and print the dotfile to the *Messages* buffer or to a file if DEBUG is a filename."
-  (let ((dot (org-mind-map-make-dot (org-mind-map-data))))
+  (let ((dot (org-mind-map-make-dot (org-mind-map-data linksp))))
     (if debug
 	(progn (message (org-mind-map-command name))
 	       (if (stringp debug)
@@ -334,7 +334,8 @@ and print the dotfile to the *Messages* buffer or to a file if DEBUG is a filena
 (defun org-mind-map-write-with-prompt nil
   "Prompt for an output FILENAME (without extension) to write your .pdf and .dot files."
   (let ((filename (read-file-name "What is the file name you would like to save to?")))
-    (org-mind-map-write-named filename (concat filename ".dot"))))
+    (org-mind-map-write-named filename (concat filename ".dot")
+			      (y-or-n-p "Include org links? "))))
 
 ;;;###autoload
 (defun org-mind-map-write (&optional promptp)
