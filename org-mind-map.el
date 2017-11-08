@@ -354,7 +354,7 @@ If called with prefix arg (or PROMPTP is non-nil), then call `org-mind-map-write
   (interactive "P")
   (org-narrow-to-subtree)
   (if promptp (org-mind-map-write-with-prompt)
-    (org-mind-map-write-named (concat (buffer-file-name (nth 4 (org-heading-components))))))
+    (org-mind-map-write-named (concat (buffer-file-name) (nth 4 (org-heading-components)))))
   (widen))
 
 (defun org-mind-map-write-current-tree (&optional promptp)
@@ -365,7 +365,7 @@ If called with prefix arg (or PROMPTP is non-nil), then call `org-mind-map-write
     (ignore-errors (outline-up-heading 100))
     (org-narrow-to-subtree)
     (if promptp (org-mind-map-write-with-prompt)
-      (org-mind-map-write-named (concat (buffer-file-name (nth 4 (org-heading-components))))))
+      (org-mind-map-write-named (concat (buffer-file-name) (nth 4 (org-heading-components)))))
     (widen)))
 
 ;; Add a tool bar icon
