@@ -257,7 +257,7 @@ TAGS consistent."
 	 (output
 	  (org-element-map (org-element-parse-buffer 'headline)
 	      'headline
-	    (lambda(hl)
+	    (lambda (hl)
 	      (let ((parent (org-element-property :parent hl )))
 		(and (eq (org-element-type parent) 'headline)
 		     (list (org-mind-map-write-tags hm parent)
