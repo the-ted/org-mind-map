@@ -252,7 +252,8 @@ TAGS consistent."
     h))
 
 (defun org-mind-map-data (&optional linksp)
-  "Create graph & tag legend of all directed pairs of headlines for constructing the digraph."
+  "Create graph & tag legend of all directed pairs of headlines for constructing the digraph.
+If LINKSP is non-nil include graph edges for org links."
   (let* ((hm (org-mind-map-tags))
 	 (output
 	  (org-element-map (org-element-parse-buffer 'headline)
@@ -313,7 +314,8 @@ The output file will be in the same location as the org file, with the same name
   "Create a directed graph output based on the org tree in the current buffer, with name NAME.  
 To customize, see the org-mind-map group.
 If DEBUG is non-nil, then print the dot command to the *Messages* buffer,
-and print the dotfile to the *Messages* buffer or to a file if DEBUG is a filename."
+and print the dotfile to the *Messages* buffer or to a file if DEBUG is a filename.
+If LINKSP is non-nil include graph edges for org links."
   (let ((dot (org-mind-map-make-dot (org-mind-map-data linksp))))
     (if debug
 	(progn (message (org-mind-map-command name))
