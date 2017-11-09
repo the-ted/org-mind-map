@@ -113,26 +113,33 @@ See the graphviz user manual for description of these options."
   :group 'org-mind-map)
 
 (defcustom org-mind-map-node-formats nil
-  "Assoc list of (NAME . FN) pairs where FN is a function which outputs a format string 
-to be placed after the node name (e.g. [label=\"Node1\",color=\"red\"]).
+  "Assoc list of (NAME . FN) pairs where NAME is a value for the :OMM-NODE-FMT property 
+of a node/headline, and FN is a function which outputs a format string to be placed after the 
+node name (e.g. [label=\"Node1\",color=\"red\"]).
 The function FN should take the following 5 arguments which can be used to construct the format: 
 
 TITLE = the label string for the node
 TAGS = a list of org tags for the current node
 COLOR = the contents of the OMM-COLOR property for the current node
 H = a hash map of colors
-EL = an org element obtained from `org-element-map'"
+EL = an org element obtained from `org-element-map'
+
+Note: the :OMM-NODE-FMT property is inherited by children of the node/headline where it is defined."
   :type '(alist :key-type (string :tag "Name")
 		:value-type (function :tag "Format function"))
   :group 'org-mind-map)
 
 (defcustom org-mind-map-edge-formats nil
-  "Assoc list of (NAME . FN) pairs where FN is a function which outputs a format string 
-to be placed after an edge (e.g. [style=dotted]).
+  "Assoc list of (NAME . FN) pairs where NAME is a value for the :OMM-EDGE-FMT property
+of a node/headline, and FN is a function which outputs a format string to be placed after an 
+edge (e.g. [style=dotted]). 
 The function FN should take the following 2 arguments which can be used to construct the format: 
 
 H = a hash map of colors
-EL = an org element obtained from `org-element-map'"
+EL = an org element obtained from `org-element-map'
+
+Note: the :OMM-EDGE-FMT property affects edges leading to the node at which it is defined, and 
+is inherited by children of that node/headline."
   :type '(alist :key-type (string :tag "Name")
 		:value-type (function :tag "Format function"))
   :group 'org-mind-map)
