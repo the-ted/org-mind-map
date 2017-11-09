@@ -94,21 +94,37 @@
   :group 'org-mind-map)
 
 (defcustom org-mind-map-rankdir "LR"
-  "Sets the order of the resulting graph.  
+  "Sets the order of the resulting graph.
 LR is left-to-right, and TB is top-to-bottom."
   :type '(choice
           (const :tag "Left to right" "LR")
-          (const :tag "Top to bottom" "TB")))
+          (const :tag "Top to bottom" "TB"))
+  :group 'org-mind-map)
 
 (defcustom org-mind-map-engine "dot"
-  "Sets the layout engine used in your graphs.  
+  "Sets the layout engine used in your graphs.
 See the graphviz user manual for description of these options."
   :type '(choice
           (const :tag "Directed Graph" "dot")
           (const :tag "Undirected Spring Graph" "neato")
           (const :tag "Radial Layout" "twopi")
           (const :tag "Circular Layout" "circo")
-          (const :tag "Undirected Spring Force-Directed" "fdp")))
+          (const :tag "Undirected Spring Force-Directed" "fdp"))
+  :group 'org-mind-map)
+
+(defcustom org-mind-map-node-formats nil
+  "Assoc list of (NAME . FN) pairs where FN is a function which outputs a format string 
+to be placed after the node name (e.g. [label=\"Node1\",color=\"red\"]).
+The function FN should take the following 5 arguments which can be used to construct the format: 
+
+TITLE = the label string for the node
+TAGS = a list of org tags for the current node
+COLOR = the contents of the OMM-COLOR property for the current node
+H = a hash map of colors
+EL = an org element from parsing the tree with `org-element-map'"
+  :type '(alist :key-type (string :tag "Name")
+		:value-type (function :tag "Format function"))
+  :group 'org-mind-map)
 
 (defun org-mind-map-wrap-lines (s)
   "Wraps a string S so that it can never be more than ORG-MIND-MAP-WRAP-LINE-LENGTH characters long."
@@ -129,40 +145,42 @@ See the graphviz user manual for description of these options."
   (let* ((color (gethash tag h)))
     (concat "<td bgcolor=\"" color "\">" tag "</td>")))
 
-;; (defun org-mind-map-tags-default (title tags props color h)
-;;   ""
-;;   (concat "[label=<<table>"
-;; 	  (if (> (length tags) 0)
-;; 	      (concat "<tr><td colspan=\"" (int-to-string (length tags)) "\" ")
-;; 	    "<tr><td")
-;; 	  (if color (concat " bgcolor=\"" color "\" "))
-;; 	  ">" title "</td></tr>"
-;; 	  (if (> (length tags) 0)
-;; 	      (concat
-;; 	       "<tr>" (mapconcat (-partial 'org-mind-map-add-color h) tags "") "</tr>"))
-;; 	  "</table>>];\n"))
+(defun org-mind-map-write-tags-default (title tags color h el)
+  "Default function for writing nodes."
+  (concat "[label=<<table>"
+	  (if (> (length tags) 0)
+	      (concat "<tr><td colspan=\"" (int-to-string (length tags)) "\" ")
+	    "<tr><td")
+	  (if color (concat " bgcolor=\"" color "\" "))
+	  ">" title "</td></tr>"
+	  (if (> (length tags) 0)
+	      (concat
+	       "<tr>" (mapconcat (-partial 'org-mind-map-add-color h) tags "") "</tr>"))
+	  "</table>>];\n"))
 
-;; TODO: make this more flexible. Check for :OMM-NOTE-FMT property and add node properties.
-(defun org-mind-map-write-tags (h el)
+(defun org-mind-map-get-property (prop el &optional inheritp)
+  "Get property PROP from an org element EL, using inheritance if INHERITP is non-nil."
+  (let ((node el)
+	(val (org-element-property prop el)))
+    (while (and inheritp
+		(not val)
+		(not (eq (org-element-type node) 'org-data)))
+      (setq node (org-element-property :parent node)
+	    val (org-element-property prop node)))
+    val))
+
+(defun org-mind-map-write-tags (h el &optional edgep)
   "Use H as the hash-map of colors and takes an element EL and extracts the title and tags.  
 Then, formats the titles and tags so as to be usable within DOT's graphviz language."
   (let* ((ts (org-element-property :title el))
 	 (wrapped-title (org-mind-map-wrap-lines (if (listp ts) (first ts) ts)))
          (title (replace-regexp-in-string "&" "&amp;" wrapped-title nil t))
          (color (org-element-property :OMM-COLOR el))
-	 (tags (org-element-property :tags el)))
-    ;; Factor out following code as a separate function that is called if there are no node properties?
-    ;;(funcall fn title tags color)
-    (concat "[label=<<table>"
-	    (if (> (length tags) 0)
-		(concat "<tr><td colspan=\"" (int-to-string (length tags)) "\" ")
-              "<tr><td")
-            (if color (concat " bgcolor=\"" color "\" "))
-            ">" title "</td></tr>"
-	    (if (> (length tags) 0)
-                (concat
-                 "<tr>" (mapconcat (-partial 'org-mind-map-add-color h) tags "") "</tr>"))
-	    "</table>>];\n")))
+	 (tags (org-element-property :tags el))
+	 (fmt (org-mind-map-get-property :OMM-NODE-FMT el t)))
+    (funcall (or (cdr (assoc fmt org-mind-map-node-formats))
+		 'org-mind-map-write-tags-default)
+	     title tags color h el)))
 
 (defun org-mind-map-first-headline (e)
   "Figure out the first headline within element E."
@@ -200,8 +218,10 @@ TAGS consistent."
       'link
     (lambda (l)
       (if (org-mind-map-valid-link? l)
-	  (list (org-mind-map-write-tags tags (org-mind-map-first-headline l))
-		(org-mind-map-write-tags tags (org-mind-map-destination-headline l)))))))
+	  (list (org-mind-map-write-tags
+		 tags (org-mind-map-first-headline l))
+		(org-mind-map-write-tags
+		 tags (org-mind-map-destination-headline l)))))))
 
 
 (defun org-mind-map-make-legend (h)
@@ -259,7 +279,7 @@ If LINKSP is non-nil include graph edges for org links."
 	  (org-element-map (org-element-parse-buffer 'headline)
 	      'headline
 	    (lambda (hl)
-	      (let ((parent (org-element-property :parent hl )))
+	      (let ((parent (org-element-property :parent hl)))
 		(and (eq (org-element-type parent) 'headline)
 		     (list (org-mind-map-write-tags hm parent)
 			   (org-mind-map-write-tags hm hl)
