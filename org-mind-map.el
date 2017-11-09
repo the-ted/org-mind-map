@@ -121,9 +121,25 @@ TITLE = the label string for the node
 TAGS = a list of org tags for the current node
 COLOR = the contents of the OMM-COLOR property for the current node
 H = a hash map of colors
-EL = an org element from parsing the tree with `org-element-map'"
+EL = an org element obtained from `org-element-map'"
   :type '(alist :key-type (string :tag "Name")
 		:value-type (function :tag "Format function"))
+  :group 'org-mind-map)
+
+(defcustom org-mind-map-edge-formats nil
+  "Assoc list of (NAME . FN) pairs where FN is a function which outputs a format string 
+to be placed after an edge (e.g. [style=dotted]).
+The function FN should take the following 2 arguments which can be used to construct the format: 
+
+H = a hash map of colors
+EL = an org element obtained from `org-element-map'"
+  :type '(alist :key-type (string :tag "Name")
+		:value-type (function :tag "Format function"))
+  :group 'org-mind-map)
+
+(defcustom org-mind-map-edge-format-default ""
+  "Default format string for graph edges, e.g. \"[style=dotted]\"."
+  :type 'string
   :group 'org-mind-map)
 
 (defun org-mind-map-wrap-lines (s)
@@ -177,10 +193,13 @@ Then, formats the titles and tags so as to be usable within DOT's graphviz langu
          (title (replace-regexp-in-string "&" "&amp;" wrapped-title nil t))
          (color (org-element-property :OMM-COLOR el))
 	 (tags (org-element-property :tags el))
-	 (fmt (org-mind-map-get-property :OMM-NODE-FMT el t)))
-    (funcall (or (cdr (assoc fmt org-mind-map-node-formats))
-		 'org-mind-map-write-tags-default)
-	     title tags color h el)))
+	 (fmt (org-mind-map-get-property (if edgep :OMM-EDGE-FMT :OMM-NODE-FMT) el t)))
+    (if edgep (funcall (or (cdr (assoc fmt org-mind-map-edge-formats))
+			   (lambda (a b) org-mind-map-edge-format-default))
+		       h el)
+      (funcall (or (cdr (assoc fmt org-mind-map-node-formats))
+		   'org-mind-map-write-tags-default)
+	       title tags color h el))))
 
 (defun org-mind-map-first-headline (e)
   "Figure out the first headline within element E."
@@ -283,8 +302,7 @@ If LINKSP is non-nil include graph edges for org links."
 		(and (eq (org-element-type parent) 'headline)
 		     (list (org-mind-map-write-tags hm parent)
 			   (org-mind-map-write-tags hm hl)
-			   ;; TODO: collect edge properties
-			   )))))))
+			   (org-mind-map-write-tags hm hl t))))))))
     (list (append output (if linksp (org-mind-map-get-links hm))) hm)))
 
 (defun org-mind-map-make-dot (data)
@@ -299,15 +317,15 @@ If LINKSP is non-nil include graph edges for org links."
    node [shape=plaintext];\n"
    (mapconcat 'identity (mapcar
 			 #'(lambda (x) (concat (org-mind-map-dot-node-name x) x))
-			 (-distinct (-flatten table)))
+			 (-distinct (-flatten (mapcar (lambda (x) (list (nth 0 x) (nth 1 x)))
+						      table))))
               " ")
    (mapconcat 'identity
 	      (mapcar #'(lambda (x)
-			  (format "%s -> %s;\n"
+			  (format "%s -> %s %s;\n"
 				  (org-mind-map-dot-node-name (nth 0 x))
 				  (org-mind-map-dot-node-name (nth 1 x))
-				  ;; TODO: add edge properties
-				  ))
+				  (nth 2 x)))
 		      table)
 	      " ")
    (org-mind-map-make-legend legend)
