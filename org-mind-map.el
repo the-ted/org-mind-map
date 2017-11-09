@@ -377,6 +377,15 @@ If LINKSP is non-nil include graph edges for org links."
     (org-mind-map-write-named filename (concat filename ".dot")
 			      (y-or-n-p "Include org links? "))))
 
+(defun org-mind-map-default-filename (treenamep)
+  "Return a default filename for saving the tree diagram.
+If TREENAMEP is non-nil include in the filename the name of the top level header of the tree."
+  (concat (file-name-sans-extension (buffer-name))
+	  "_diagram"
+	  (if treenamep
+	      (concat "-"
+		      (replace-regexp-in-string " +" "_" (nth 4 (org-heading-components)))))))
+
 ;;;###autoload
 (defun org-mind-map-write (&optional promptp)
   "Create a digraph based on the org tree in the current buffer.
@@ -385,7 +394,7 @@ To customize, see the org-mind-map group.
 If called with prefix arg (or PROMPTP is non-nil), then call `org-mind-map-write-with-prompt'."
   (interactive "P")
   (if promptp (org-mind-map-write-with-prompt)
-    (org-mind-map-write-named (buffer-file-name))))
+    (org-mind-map-write-named (org-mind-map-default-filename nil))))
 
 ;;;###autoload
 (defun org-mind-map-write-tree (&optional promptp)
@@ -395,9 +404,10 @@ If called with prefix arg (or PROMPTP is non-nil), then call `org-mind-map-write
   (interactive "P")
   (org-narrow-to-subtree)
   (if promptp (org-mind-map-write-with-prompt)
-    (org-mind-map-write-named (concat (buffer-file-name) (nth 4 (org-heading-components)))))
+    (org-mind-map-write-named (org-mind-map-default-filename t)))
   (widen))
 
+;;;###autoload
 (defun org-mind-map-write-current-tree (&optional promptp)
   "Create a directed graph output based on just the current org tree.
 If called with prefix arg (or PROMPTP is non-nil), then call `org-mind-map-write-with-prompt'."
@@ -406,7 +416,7 @@ If called with prefix arg (or PROMPTP is non-nil), then call `org-mind-map-write
     (ignore-errors (outline-up-heading 100))
     (org-narrow-to-subtree)
     (if promptp (org-mind-map-write-with-prompt)
-      (org-mind-map-write-named (concat (buffer-file-name) (nth 4 (org-heading-components)))))
+      (org-mind-map-write-named (org-mind-map-default-filename t)))
     (widen)))
 
 ;; Add a tool bar icon
