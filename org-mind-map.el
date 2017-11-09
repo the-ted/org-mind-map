@@ -388,7 +388,7 @@ If TREENAMEP is non-nil include in the filename the name of the top level header
 
 ;;;###autoload
 (defun org-mind-map-write (&optional promptp)
-  "Create a digraph based on the org tree in the current buffer.
+  "Create a digraph based on all org trees in the current buffer.
 The digraph will be named the same name as the current buffer.
 To customize, see the org-mind-map group.
 If called with prefix arg (or PROMPTP is non-nil), then call `org-mind-map-write-with-prompt'."
@@ -397,8 +397,8 @@ If called with prefix arg (or PROMPTP is non-nil), then call `org-mind-map-write
     (org-mind-map-write-named (org-mind-map-default-filename nil))))
 
 ;;;###autoload
-(defun org-mind-map-write-tree (&optional promptp)
-  "Create a directed graph output based on just the current org tree.
+(defun org-mind-map-write-current-branch (&optional promptp)
+  "Create a directed graph output based on just the current org tree branch.
 To customize, see the org-mind-map group.
 If called with prefix arg (or PROMPTP is non-nil), then call `org-mind-map-write-with-prompt'."
   (interactive "P")
@@ -409,7 +409,7 @@ If called with prefix arg (or PROMPTP is non-nil), then call `org-mind-map-write
 
 ;;;###autoload
 (defun org-mind-map-write-current-tree (&optional promptp)
-  "Create a directed graph output based on just the current org tree.
+  "Create a directed graph output based on the whole current org tree.
 If called with prefix arg (or PROMPTP is non-nil), then call `org-mind-map-write-with-prompt'."
   (interactive "P")
   (save-restriction
@@ -436,7 +436,7 @@ If called with prefix arg (or PROMPTP is non-nil), then call `org-mind-map-write
   '("Diagram of current tree" . org-mind-map-write-current-tree))
 
 (define-key org-mode-map [menu-bar Org Diagram branch]
-  '("Diagram of current branch" . org-mind-map-write-tree))
+  '("Diagram of current branch" . org-mind-map-write-current-branch))
 
 ;; (global-set-key (kbd "<f4>") 'org-mind-map-write)
 
