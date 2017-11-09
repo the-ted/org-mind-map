@@ -29,6 +29,55 @@
 ;; tree as a directed graph.  Mail to <theodore.wiles@gmail.com> to discuss
 ;; features and additions.  All suggestions are more than welcome.
 
+;;; Commands:
+;;
+;; Below is a complete list of commands:
+;;
+;;  `org-mind-map-write'
+;;    Create a digraph based on all org trees in the current buffer.
+;;    Keybinding: M-x org-mind-map-write
+;;  `org-mind-map-write-current-branch'
+;;    Create a directed graph output based on just the current org tree branch.
+;;    Keybinding: M-x org-mind-map-write-current-branch
+;;  `org-mind-map-write-current-tree'
+;;    Create a directed graph output based on the whole current org tree.
+;;    Keybinding: M-x org-mind-map-write-current-tree
+;;
+;;; Customizable Options:
+;;
+;; Below is a list of customizable options:
+;;
+;;  `org-mind-map-wrap-line-length'
+;;    Line length within graphviz nodes.
+;;    default = 30
+;;  `org-mind-map-wrap-legend-line-length'
+;;    Line length of the graphviz legend.
+;;    default = 45
+;;  `org-mind-map-unflatten-command'
+;;    Shell executable command for running the UNFLATTEN command.
+;;    default = "unflatten -l3"
+;;  `org-mind-map-dot-command'
+;;    Shell executable command for running the DOT command.
+;;    default = "dot"
+;;  `org-mind-map-dot-output'
+;;    Format of the DOT output.  Defaults to PDF.
+;;    default = "pdf"
+;;  `org-mind-map-rankdir'
+;;    Sets the order of the resulting graph.
+;;    default = "LR"
+;;  `org-mind-map-engine'
+;;    Sets the layout engine used in your graphs.
+;;    default = "dot"
+;;  `org-mind-map-node-formats'
+;;    Assoc list of (NAME . FN) pairs where NAME is a value for the :OMM-NODE-FMT property 
+;;    default = nil
+;;  `org-mind-map-edge-formats'
+;;    Assoc list of (NAME . FN) pairs where NAME is a value for the :OMM-EDGE-FMT property
+;;    default = nil
+;;  `org-mind-map-edge-format-default'
+;;    Default format string for graph edges, e.g. "[style=dotted]".
+;;    default = ""
+
 ;; The headings of the org-mode file are treated as node text in the resulting tree.
 ;; Org-mode heading tags are included in the resulting tree as additional cells
 ;; within the node.
@@ -44,11 +93,14 @@
 ;; To install, add this code to your .emacs:
 ;; (load "org-mind-map.el")
 
-;; If on linux, customize the values of org-mind-map-unflatten-command
-;; and org-mind-map-dot-command to have the values corresponding to
+;; If on linux, customize the values of `org-mind-map-unflatten-command'
+;; and `org-mind-map-dot-command' to have the values corresponding to
 ;; the executables in your system.
 
-;; Then, run "M-x org-mind-map-write"
+;; Then, run "M-x org-mind-map-write" to create a graph of all trees in the current buffer,
+
+;; You can customize the style of the graph by adding :OMM-NODE-FMT and :OMM-EDGE-FMT properties
+;; to the headlines in the tree.
 
 ;; The latest version is available at:
 ;;
@@ -379,7 +431,7 @@ If LINKSP is non-nil include graph edges for org links."
 
 ;;;###autoload
 (defun org-mind-map-write-with-prompt nil
-  "Prompt for an output FILENAME (without extension) to write your .pdf and .dot files."
+  "Prompt for an output FILENAME (without extension) to write your output and .dot files."
   (let ((filename (read-file-name "What is the file name you would like to save to?")))
     (org-mind-map-write-named filename (concat filename ".dot")
 			      (y-or-n-p "Include org links? "))))
