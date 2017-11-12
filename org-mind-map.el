@@ -338,8 +338,9 @@ Dont return any of the colors listed in the optional arg EXCEPTIONS."
       (setq color (funcall fn)))
     color))
 
-(defun org-mind-map-tags ()
-  "Return a hash map of tags in the org file mapped to random colors."
+(defun org-mind-map-tags (&optional exceptions)
+  "Return a hash map of tags in the org file mapped to random colors.
+Dont return any of the colors listed in the optional arg EXCEPTIONS."
   (let* ((unique-tags
 	  (-distinct
 	   (-flatten
@@ -351,7 +352,7 @@ Dont return any of the colors listed in the optional arg EXCEPTIONS."
         (let ((legend (org-element-property :OMM-LEGEND hl))
               (color (org-element-property :OMM-COLOR hl)))
           (if legend (puthash legend color h)))))
-    (-map (lambda (x) (puthash x (org-mind-map-rgb) h)) unique-tags)
+    (-map (lambda (x) (puthash x (org-mind-map-rgb exceptions) h)) unique-tags)
     h))
 
 (defun org-mind-map-data (&optional linksp)
