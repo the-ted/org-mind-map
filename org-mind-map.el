@@ -326,12 +326,17 @@ TAGS consistent."
                     "")
          "</TABLE>>];}"))))
 
-(defun org-mind-map-rgb ()
-  "Make a random pastel-like RGB color."
-  (concat "#"
-	  (format "%x" (+ 125 (random (- 255 125))))
-	  (format "%x" (+ 125 (random (- 255 125))))
-	  (format "%x" (+ 125 (random (- 255 125))))))
+(defun org-mind-map-rgb (&optional exceptions)
+  "Make a random pastel-like RGB color.
+Dont return any of the colors listed in the optional arg EXCEPTIONS."
+  (let* ((fn (lambda nil (concat "#"
+				 (format "%x" (+ 125 (random (- 255 125))))
+				 (format "%x" (+ 125 (random (- 255 125))))
+				 (format "%x" (+ 125 (random (- 255 125)))))))
+	 (color (funcall fn)))
+    (while (member color exceptions)
+      (setq color (funcall fn)))
+    color))
 
 (defun org-mind-map-tags ()
   "Return a hash map of tags in the org file mapped to random colors."
