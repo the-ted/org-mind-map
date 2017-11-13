@@ -201,6 +201,16 @@ is inherited by children of that node/headline."
   :type 'string
   :group 'org-mind-map)
 
+(defcustom org-mind-map-reserved-colors nil
+  "List of colors that will not be used for coloring tags, unless specified by :OMM-TAG-COLORS.
+These colors will be excluded when random tag colors are chosen by `org-mind-map-rgb'.
+Each color should be in hexadecimal form, e.g: \"#e3cfbc\", where the consecutive pairs
+of hexdigits indicate levels of red, green and blue respectively.
+It is not necessary to include any colors with levels below 7d, as these are not used
+for creating random tag colors."
+  :type '(repeat string)
+  :group 'org-mind-map)
+
 (defun org-mind-map-wrap-lines (s)
   "Wraps a string S so that it can never be more than ORG-MIND-MAP-WRAP-LINE-LENGTH characters long."
   (let* ((s2 (org-do-wrap (split-string s " ") org-mind-map-wrap-line-length)))
@@ -332,10 +342,11 @@ in order to keep the tag colors consistent across calls."
 (defun org-mind-map-rgb (&optional exceptions)
   "Make a random pastel-like RGB color.
 Dont return any of the colors listed in the optional arg EXCEPTIONS."
-  (let* ((fn (lambda nil (concat "#"
-				 (format "%x" (+ 125 (random (- 255 125))))
-				 (format "%x" (+ 125 (random (- 255 125))))
-				 (format "%x" (+ 125 (random (- 255 125)))))))
+  (let* ((fn (lambda nil
+	       (concat "#"
+		       (format "%x" (+ 125 (random (- 255 125))))
+		       (format "%x" (+ 125 (random (- 255 125))))
+		       (format "%x" (+ 125 (random (- 255 125)))))))
 	 (color (funcall fn)))
     (while (member color exceptions)
       (setq color (funcall fn)))
@@ -358,10 +369,9 @@ Dont return any of the colors listed in the optional arg EXCEPTIONS."
 (defun org-mind-map-data (&optional linksp)
   "Create graph & tag legend of all directed pairs of headlines for constructing the digraph.
 If LINKSP is non-nil include graph edges for org links."
-  (let* ((hm (org-mind-map-tags))
+  (let* ((hm (org-mind-map-tags org-mind-map-reserved-colors))
 	 (output
-	  (org-element-map (org-element-parse-buffer 'headline)
-	      'headline
+	  (org-element-map (org-element-parse-buffer 'headline) 'headline
 	    (lambda (hl)
 	      (let ((parent (org-element-property :parent hl)))
 		(and (eq (org-element-type parent) 'headline)
