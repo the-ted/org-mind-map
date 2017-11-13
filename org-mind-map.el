@@ -173,7 +173,7 @@ The function FN should take the following 5 arguments which can be used to const
 TITLE = the label string for the node
 TAGS = a list of org tags for the current node
 COLOR = the contents of the OMM-COLOR property for the current node
-H = a hash map of colors
+HM = a hash map of colors
 EL = an org element obtained from `org-element-map'
 
 Note: the :OMM-NODE-FMT property is inherited by children of the node/headline where it is defined."
@@ -187,7 +187,7 @@ of a node/headline, and FN is a function which outputs a format string to be pla
 edge (e.g. [style=dotted]). 
 The function FN should take the following 2 arguments which can be used to construct the format: 
 
-H = a hash map of colors
+HM = a hash map of colors
 EL = an org element obtained from `org-element-map'
 
 Note: the :OMM-EDGE-FMT property affects edges leading to the node at which it is defined, and 
@@ -248,7 +248,7 @@ The EL argument is not used, but is needed for compatibility."
     val))
 
 (defun org-mind-map-write-tags (hm el &optional edgep)
-  "Use H as the hash-map of colors and takes an element EL and extracts the title and tags.  
+  "Use HM as the hash-map of colors and takes an element EL and extracts the title and tags.  
 Then, formats the titles and tags so as to be usable within DOT's graphviz language."
   (let* ((ts (org-element-property :title el))
 	 (wrapped-title (org-mind-map-wrap-lines (if (listp ts) (first ts) ts)))
@@ -306,7 +306,7 @@ in order to keep the tag colors consistent across calls."
 
 
 (defun org-mind-map-make-legend (h)
-  "Make a legend using the hash-map H."
+  "Make a legend using the hash-map HM."
   (let ((res '()))
     (maphash (lambda (k v) (push k res)) h)
     (if (> (length res) 0)
@@ -349,14 +349,14 @@ Dont return any of the colors listed in the optional arg EXCEPTIONS."
 	   (-flatten
 	    (org-element-map (org-element-parse-buffer 'headline) 'headline
 	      (lambda (hl) (org-element-property :tags hl))))))
-	 (h (make-hash-table :test 'equal)))
+	 (hm (make-hash-table :test 'equal)))
     (org-element-map (org-element-parse-buffer 'headline) 'headline
       (lambda (hl)
         (let ((legend (org-element-property :OMM-LEGEND hl))
               (color (org-element-property :OMM-COLOR hl)))
-          (if legend (puthash legend color h)))))
-    (-map (lambda (x) (puthash x (org-mind-map-rgb exceptions) h)) unique-tags)
-    h))
+          (if legend (puthash legend color hm)))))
+    (-map (lambda (x) (puthash x (org-mind-map-rgb exceptions) hm)) unique-tags)
+    hm))
 
 (defun org-mind-map-data (&optional linksp)
   "Create graph & tag legend of all directed pairs of headlines for constructing the digraph.
