@@ -215,13 +215,16 @@ is inherited by children of that node/headline."
   "Make string S formatted to be usable within dot node names."
   (replace-regexp-in-string "[^A-Za-z0-9]" "" s nil t))
 
-(defun org-mind-map-add-color (h tag)
-  "Add the color text H after tag TAG."
-  (let* ((color (gethash tag h)))
+(defun org-mind-map-add-color (hm tag)
+  "Add the color text HM after tag TAG."
+  (let* ((color (gethash tag hm)))
     (concat "<td bgcolor=\"" color "\">" tag "</td>")))
 
-(defun org-mind-map-write-tags-default (title tags color h el)
-  "Default function for writing nodes."
+(defun org-mind-map-write-tags-default (title tags color hm el)
+  "Default function for writing nodes.
+Label node with TITLE and background COLOR, and write TAGS (a list of tag names)
+into boxes underneath, using associated colors in hashmap HM.
+The EL argument is not used, but is needed for compatibility."
   (concat "[label=<<table>"
 	  (if (> (length tags) 0)
 	      (concat "<tr><td colspan=\"" (int-to-string (length tags)) "\" ")
@@ -230,7 +233,7 @@ is inherited by children of that node/headline."
 	  ">" title "</td></tr>"
 	  (if (> (length tags) 0)
 	      (concat
-	       "<tr>" (mapconcat (-partial 'org-mind-map-add-color h) tags "") "</tr>"))
+	       "<tr>" (mapconcat (-partial 'org-mind-map-add-color hm) tags "") "</tr>"))
 	  "</table>>];\n"))
 
 (defun org-mind-map-get-property (prop el &optional inheritp)
@@ -244,7 +247,7 @@ is inherited by children of that node/headline."
 	    val (org-element-property prop node)))
     val))
 
-(defun org-mind-map-write-tags (h el &optional edgep)
+(defun org-mind-map-write-tags (hm el &optional edgep)
   "Use H as the hash-map of colors and takes an element EL and extracts the title and tags.  
 Then, formats the titles and tags so as to be usable within DOT's graphviz language."
   (let* ((ts (org-element-property :title el))
@@ -255,10 +258,10 @@ Then, formats the titles and tags so as to be usable within DOT's graphviz langu
 	 (fmt (org-mind-map-get-property (if edgep :OMM-EDGE-FMT :OMM-NODE-FMT) el t)))
     (if edgep (funcall (or (cdr (assoc fmt org-mind-map-edge-formats))
 			   (lambda (a b) org-mind-map-edge-format-default))
-		       h el)
+		       hm el)
       (funcall (or (cdr (assoc fmt org-mind-map-node-formats))
 		   'org-mind-map-write-tags-default)
-	       title tags color h el))))
+	       title tags color hm el))))
 
 (defun org-mind-map-first-headline (e)
   "Figure out the first headline within element E."
@@ -288,18 +291,18 @@ Then, formats the titles and tags so as to be usable within DOT's graphviz langu
       (org-open-link-from-string (concat "[[" l "]]"))
       (org-element-at-point))))
 
-(defun org-mind-map-get-links (tags)
+(defun org-mind-map-get-links (hm)
   "Make a list of links with the headline they are within and
-their destination. Pass TAGS in order to keep the hash-map of
-TAGS consistent."
+their destination. Pass hashmap arg HM mapping tags to colors 
+in order to keep the tag colors consistent across calls."
   (org-element-map (org-element-parse-buffer 'object)
       'link
     (lambda (l)
       (if (org-mind-map-valid-link? l)
 	  (list (org-mind-map-write-tags
-		 tags (org-mind-map-first-headline l))
+		 hm (org-mind-map-first-headline l))
 		(org-mind-map-write-tags
-		 tags (org-mind-map-destination-headline l)))))))
+		 hm (org-mind-map-destination-headline l)))))))
 
 
 (defun org-mind-map-make-legend (h)
