@@ -344,18 +344,15 @@ Dont return any of the colors listed in the optional arg EXCEPTIONS."
 (defun org-mind-map-tags (&optional exceptions)
   "Return a hash map of tags in the org file mapped to random colors.
 Dont return any of the colors listed in the optional arg EXCEPTIONS."
-  (let* ((unique-tags
-	  (-distinct
-	   (-flatten
-	    (org-element-map (org-element-parse-buffer 'headline) 'headline
-	      (lambda (hl) (org-element-property :tags hl))))))
-	 (hm (make-hash-table :test 'equal)))
+  (let* ((hm (make-hash-table :test 'equal)))
     (org-element-map (org-element-parse-buffer 'headline) 'headline
       (lambda (hl)
-        (let ((legend (org-element-property :OMM-LEGEND hl))
+        (let ((tags (mapcar 'substring-no-properties (org-element-property :tags hl)))
+	      (legend (org-element-property :OMM-LEGEND hl))
               (color (org-element-property :OMM-COLOR hl)))
-          (if legend (puthash legend color hm)))))
-    (-map (lambda (x) (puthash x (org-mind-map-rgb exceptions) hm)) unique-tags)
+          (if legend (puthash legend color hm))
+	  (if tags (mapcar (lambda (x) (puthash x (org-mind-map-rgb exceptions) hm))
+			   tags)))))
     hm))
 
 (defun org-mind-map-data (&optional linksp)
