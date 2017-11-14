@@ -202,13 +202,26 @@ is inherited by children of that node/headline."
   :group 'org-mind-map)
 
 (defcustom org-mind-map-reserved-colors nil
-  "List of colors that will not be used for coloring tags, unless specified by :OMM-TAG-COLORS.
-These colors will be excluded when random tag colors are chosen by `org-mind-map-rgb'.
+  "List of colors that will not be used for coloring tags.
+These colors will be excluded when random tag colors are chosen by `org-mind-map-rgb'
+so that you can use them for other things.
 Each color should be in hexadecimal form, e.g: \"#e3cfbc\", where the consecutive pairs
 of hexdigits indicate levels of red, green and blue respectively.
 It is not necessary to include any colors with levels below 7d, as these are not used
 for creating random tag colors."
   :type '(repeat string)
+  :group 'org-mind-map)
+
+(defcustom org-mind-map-tag-colors nil
+  "An alist of (TAG . COLOR) pairs for choosing colors for tags.
+Any tags not listed here will be colored with randomly selected colors that dont
+clash with those in `org-mind-map-reserved-colors'.
+Each color should be in hexadecimal form, e.g: \"#e3cfbc\", where the consecutive pairs
+of hexdigits indicate levels of red, green and blue respectively.
+
+Note: you can also set tag colors by altering the hashmap passed as an argument to functions
+defined in `org-mind-map-node-formats'."
+  :type '(alist :key-type (string :tag "     Tag") :value-type (string :tag "Color"))
   :group 'org-mind-map)
 
 (defun org-mind-map-wrap-lines (s)
@@ -362,7 +375,13 @@ Dont return any of the colors listed in the optional arg EXCEPTIONS."
 	      (legend (org-element-property :OMM-LEGEND hl))
               (color (org-element-property :OMM-COLOR hl)))
           (if legend (puthash legend color hm))
-	  (if tags (mapcar (lambda (x) (puthash x (org-mind-map-rgb exceptions) hm))
+	  (if tags (mapcar (lambda (x)
+			     (puthash x (--if-let (assoc x org-mind-map-tag-colors)
+					    (cdr it)
+					  (org-mind-map-rgb
+					   (append exceptions
+						   (mapcar 'cdr org-mind-map-tag-colors))))
+				      hm))
 			   tags)))))
     hm))
 
