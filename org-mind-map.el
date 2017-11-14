@@ -239,7 +239,7 @@ defined in `org-mind-map-node-formats'."
   (replace-regexp-in-string "[^A-Za-z0-9]" "" s nil t))
 
 (defun org-mind-map-add-color (hm tag)
-  "Add the color text HM after tag TAG."
+  "Create data element containing TAG with associated color found in hashmap HM."
   (let* ((color (gethash tag hm)))
     (concat "<td bgcolor=\"" color "\">" tag "</td>")))
 
