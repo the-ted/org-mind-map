@@ -241,7 +241,7 @@ defined in `org-mind-map-node-formats'."
 (defun org-mind-map-add-color (hm tag)
   "Create data element containing TAG with associated color found in hashmap HM."
   (let* ((color (gethash tag hm)))
-    (concat "<td bgcolor=\"" color "\">" tag "</td>")))
+    (concat "<td" (if color (concat "bgcolor=\"" color "\"")) ">" tag "</td>")))
 
 (defun org-mind-map-write-tags-default (title tags color hm el)
   "Default function for writing nodes.
