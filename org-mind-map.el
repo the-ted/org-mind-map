@@ -167,7 +167,7 @@ See the graphviz user manual for description of these options."
 (defcustom org-mind-map-node-formats nil
   "Assoc list of (NAME . FN) pairs where NAME is a value for the :OMM-NODE-FMT property 
 of a node/headline, and FN is a function which outputs a format string to be placed after the 
-node name (e.g. [label=\"Node1\",color=\"red\"]).
+node name (e.g. \"[label='Node1',color='red']\").
 The function FN should take the following 5 arguments which can be used to construct the format: 
 
 TITLE = the label string for the node
@@ -184,7 +184,7 @@ Note: the :OMM-NODE-FMT property is inherited by children of the node/headline w
 (defcustom org-mind-map-edge-formats nil
   "Assoc list of (NAME . FN) pairs where NAME is a value for the :OMM-EDGE-FMT property
 of a node/headline, and FN is a function which outputs a format string to be placed after an 
-edge (e.g. [style=dotted]). 
+edge (e.g. \"[style=dotted]\"). 
 The function FN should take the following 2 arguments which can be used to construct the format: 
 
 HM = a hash map of colors
@@ -238,10 +238,12 @@ defined in `org-mind-map-node-formats'."
   "Make string S formatted to be usable within dot node names."
   (replace-regexp-in-string "[^A-Za-z0-9]" "" s nil t))
 
-(defun org-mind-map-add-color (hm tag)
+(defun org-mind-map-add-color (hm tag &optional colspan)
   "Create data element containing TAG with associated color found in hashmap HM."
   (let* ((color (gethash tag hm)))
-    (concat "<td" (if color (concat "bgcolor=\"" color "\"")) ">" tag "</td>")))
+    (concat "<td"
+	    (if colspan (concat " colspan=\"" (int-to-string colspan) "\""))
+	    (if color (concat " bgcolor=\"" color "\"")) ">" tag "</td>")))
 
 (defun org-mind-map-write-tags-default (title tags color hm el)
   "Default function for writing nodes.
