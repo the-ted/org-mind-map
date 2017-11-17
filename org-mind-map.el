@@ -268,7 +268,8 @@ PROP can be either the property symbol (beginning with :), or the name of the pr
 	 (propstr (if (stringp prop)
 		      (upcase (if (string-match "^:" prop)
 				  prop
-				(concat ":" prop)))))
+				(concat ":" prop)))
+		    (substring (symbol-name prop) 1)))
 	 (prop (if propstr (intern propstr) prop))
 	 (val (or (org-element-property prop el)
 		  (cdr (cl-find propstr (get-text-property
