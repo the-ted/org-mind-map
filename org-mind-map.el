@@ -263,14 +263,18 @@ The EL argument is not used, but is needed for compatibility."
 
 (defun org-mind-map-get-property (prop el &optional inheritp)
   "Get property PROP from an org element EL, using inheritance if INHERITP is non-nil.
-PROP can be either a string or a symbol. If it's a string it will be converted to uppercase."
+PROP can be either the property symbol (beginning with :), or the name of the property (with or without :)."
   (let* ((node el)
-	 (prop (intern (if (stringp prop)
-			   (if (string-match "^:" prop)
-			       (upcase prop)
-			     (concat ":" (upcase prop)))
-			 prop)))
-	 (val (org-element-property prop el)))
+	 (propstr (if (stringp prop)
+		      (upcase (if (string-match "^:" prop)
+				  prop
+				(concat ":" prop)))))
+	 (prop (if propstr (intern propstr) prop))
+	 (val (or (org-element-property prop el)
+		  (cdr (cl-find propstr (get-text-property
+					 (org-element-property :begin el)
+					 'org-summaries)
+				:test (lambda (x y) (equal (caar y) x)))))))
     (while (and inheritp
 		(not val)
 		(not (eq (org-element-type node) 'org-data)))
