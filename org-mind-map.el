@@ -526,6 +526,86 @@ If called with prefix arg (or PROMPTP is non-nil), then call `org-mind-map-write
       (org-mind-map-write-named (org-mind-map-default-filename t)))
     (widen)))
 
+;;;###autoload
+(defmacro org-mind-map-make-node-fn (name doc props &optional shape color other)
+  "Create a function org-mind-map-NAME-node for writing node properties.
+Document the function with the DOC arg.
+PROPS is a list of either property & format string pairs, or individual property names,
+which will be placed in each node, e.g: ((\"PROB\" \"probability=%s\") \"COST\"). 
+For property names with no format string, \"%s=%s\" will be used with the property name and value.
+
+The node shape and background color can be specified with the optional SHAPE and COLOR arguments, 
+and any other attributes (e.g. \"fontsize=30\") can be specified with the OTHER argument.
+Each of these arguments can be either a string or a form which is evaluated for each node, 
+and returns a string."
+  `(defun ,(intern (concat "org-mind-map-" (symbol-name name) "-node"))
+       (title tags color hm el)
+     ,doc
+     (let* ((numtags (if tags (length tags)))
+	    (colspan (if tags (int-to-string numtags)))
+	    (propstxt
+	     (cl-remove
+	      nil (list ,@(mapcar
+			   (lambda (p)
+			     (cond ((stringp p)
+				    `(--if-let (org-mind-map-get-property ,p el)
+					 (concat ,(upcase p) "=" it)))
+				   ((consp p)
+				    `(--if-let (org-mind-map-get-property ,(car p) el)
+					 (format ,(nth 1 p) it)))
+				   (t (error "Invalid props value"))))
+			   props))))
+	    (shape ,shape)
+	    (color (or color ,color))
+	    (other ,other))
+       (concat "[label=<<table" (if shape " border=\"0\"") ">"
+	       (if numtags (concat "<tr><td colspan=\"" colspan "\" ") "<tr><td")
+	       (if (and color (not shape)) (concat " bgcolor=\"" color "\" "))
+	       ">" title "</td></tr>"
+	       (mapconcat (lambda (p)
+			    (concat "<tr>" (org-mind-map-add-color hm p numtags) "</tr>"))
+			  propstxt "")
+	       (if numtags
+		   (concat "<tr>"
+			   (mapconcat (-partial 'org-mind-map-add-color hm) tags "")
+			   "</tr>"))
+	       "</table>>"
+	       (if shape (concat ",shape=" shape (if color (concat ",style=filled,color=" color))))
+	       (if other (concat "," other)) "];\n"))))
+
+;;;###autoload
+(defmacro org-mind-map-make-edge-fn (name doc props &optional style color other)
+  "Create a function org-mind-map-write-NAME for writing edge properties.
+Document the function with the DOC arg.
+PROPS is a list of either property & format string pairs, or individual property names,
+which will concatenated and used to label the edges, e.g: ((\"PROB\" \"probability=%s\") \"COST\"). 
+For property names with no format string \"%s=%s\" will be used with the property name and value.
+
+The edge style and color can be specified with the optional STYLE and COLOR arguments,
+and any other attributes (e.g. \"fontsize=30\") can be specified with the OTHER argument.
+Each of these arguments can be either a string or a form which is evaluated for each node, 
+and returns a string."
+  `(defun ,(intern (concat "org-mind-map-" (symbol-name name) "-edge"))
+       (hm el)
+     ,doc
+     (let* ((propstxt (cl-remove
+		       nil (list ,@(mapcar (lambda (p)
+					     (cond ((stringp p)
+						    `(--if-let (org-mind-map-get-property ,p el)
+							 (concat ,(upcase p) "=" it)))
+						   ((consp p)
+						    `(--if-let (org-mind-map-get-property ,(car p) el)
+							 (format ,(nth 1 p) it)))
+						   (t (error "Invalid props value"))))
+					   props))))
+	    (style ,style)
+	    (color ,color)
+	    (other ,other))
+       (concat "[label=\"" (mapconcat 'identity propstxt ",") "\""
+	       (if color (concat ",color=\"" color "\" "))
+	       (if style (concat ",style=\"" style "\""))
+	       (if other (concat "," other)) "]"))))
+
 ;; Add a tool bar icon
 ;; (define-key org-mode-map [tool-bar org-button]
 ;; '(menu-item "Write the org-mode file mind map to disk." org-mind-map-write-with-prompt
