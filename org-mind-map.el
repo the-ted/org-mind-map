@@ -70,13 +70,21 @@
 ;;    default = "dot"
 ;;  `org-mind-map-node-formats'
 ;;    Assoc list of (NAME . FN) pairs where NAME is a value for the :OMM-NODE-FMT property 
+;;    See also `org-mind-map-make-node-fn'
 ;;    default = nil
 ;;  `org-mind-map-edge-formats'
 ;;    Assoc list of (NAME . FN) pairs where NAME is a value for the :OMM-EDGE-FMT property
+;;    See also `org-mind-map-make-edge-fn'
 ;;    default = nil
 ;;  `org-mind-map-edge-format-default'
 ;;    Default format string for graph edges, e.g. "[style=dotted]".
 ;;    default = ""
+;;  `org-mind-map-reserved-colors'
+;;    List of colors that will not be used for coloring tags.
+;;    default = nil
+;;  `org-mind-map-tag-colors'
+;;    An alist of (TAG . COLOR) pairs for choosing colors for tags.
+;;    default = nil
 
 ;; The headings of the org-mode file are treated as node text in the resulting tree.
 ;; Org-mode heading tags are included in the resulting tree as additional cells
@@ -263,7 +271,8 @@ The EL argument is not used, but is needed for compatibility."
 
 (defun org-mind-map-get-property (prop el &optional inheritp)
   "Get property PROP from an org element EL, using inheritance if INHERITP is non-nil.
-PROP can be either the property symbol (beginning with :), or the name of the property (with or without :)."
+PROP can be either the property symbol (beginning with :), or the name of the property (with or without :).
+If there is a column summary value for the property that has recently be calculated it will be used."
   (let* ((node el)
 	 (propstr (if (stringp prop)
 		      (upcase (if (string-match "^:" prop)
@@ -528,7 +537,9 @@ If called with prefix arg (or PROMPTP is non-nil), then call `org-mind-map-write
 
 ;;;###autoload
 (defmacro org-mind-map-make-node-fn (name doc props &optional shape color other)
-  "Create a function org-mind-map-NAME-node for writing node properties.
+  "Create a function org-mind-map-NAME-node for use with :OMM-NODE-FMT writing node properties 
+The created function should be added to `org-mind-map-node-formats' and the associated string
+can be used as the :OMM-NODE-FMT for a tree. 
 Document the function with the DOC arg.
 PROPS is a list of either property & format string pairs, or individual property names,
 which will be placed in each node, e.g: ((\"PROB\" \"probability=%s\") \"COST\"). 
@@ -537,7 +548,16 @@ For property names with no format string, \"%s=%s\" will be used with the proper
 The node shape and background color can be specified with the optional SHAPE and COLOR arguments, 
 and any other attributes (e.g. \"fontsize=30\") can be specified with the OTHER argument.
 Each of these arguments can be either a string or a form which is evaluated for each node, 
-and returns a string."
+and returns a string.
+
+Example: (org-mind-map-make-node-fn decisiontree \"Draw decision tree\" (\"COST\" (\"NOTES\" \"Notes: %s\")) nil
+			   (cond ((equal (org-mind-map-get-property :todo-keyword el) \"ACTION\") \"red\")
+				 ((equal (org-mind-map-get-property :todo-keyword el) \"STATE\") \"yellow\")
+				 ((equal (org-mind-map-get-property :todo-keyword el) \"DECISION\") \"green\")))
+
+You could put this code in your emacs startup file (e.g. ~/.emacs) and then add to `org-mind-map-node-formats' 
+the pair '(\"decisiontree\" . org-mind-map-decisiontree-node), and use \":OMM-NODE-FMT: decisiontree\" as a
+tree property."
   `(defun ,(intern (concat "org-mind-map-" (symbol-name name) "-node"))
        (title tags color hm el)
      ,doc
@@ -575,7 +595,7 @@ and returns a string."
 
 ;;;###autoload
 (defmacro org-mind-map-make-edge-fn (name doc props &optional style color other)
-  "Create a function org-mind-map-write-NAME for writing edge properties.
+  "Create a function org-mind-map-write-NAME for writing edge properties which can be used for :OMM-EDGE-FMT.
 Document the function with the DOC arg.
 PROPS is a list of either property & format string pairs, or individual property names,
 which will concatenated and used to label the edges, e.g: ((\"PROB\" \"probability=%s\") \"COST\"). 
@@ -584,7 +604,13 @@ For property names with no format string \"%s=%s\" will be used with the propert
 The edge style and color can be specified with the optional STYLE and COLOR arguments,
 and any other attributes (e.g. \"fontsize=30\") can be specified with the OTHER argument.
 Each of these arguments can be either a string or a form which is evaluated for each node, 
-and returns a string."
+and returns a string.
+
+Example: (org-mind-map-make-edge-fn decisiontree \"Draw decision tree\" (\"PROB\"))
+
+You could put this code in your emacs startup file (e.g. ~/.emacs) and then add to `org-mind-map-edge-formats' 
+the pair '(\"decisiontree\" . org-mind-map-decisiontree-edge), and use \":OMM-EDGE-FMT: decisiontree\" as a
+tree property."
   `(defun ,(intern (concat "org-mind-map-" (symbol-name name) "-edge"))
        (hm el)
      ,doc
