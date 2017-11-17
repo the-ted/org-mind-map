@@ -271,11 +271,11 @@ PROP can be either the property symbol (beginning with :), or the name of the pr
 				(concat ":" prop)))
 		    (substring (symbol-name prop) 1)))
 	 (prop (if propstr (intern propstr) prop))
-	 (val (or (org-element-property prop el)
-		  (cdr (cl-find propstr (get-text-property
+	 (val (or (cdr (cl-find propstr (get-text-property
 					 (org-element-property :begin el)
 					 'org-summaries)
-				:test (lambda (x y) (equal (caar y) x)))))))
+				:test (lambda (x y) (equal (caar y) x))))
+		  (org-element-property prop el))))
     (while (and inheritp
 		(not val)
 		(not (eq (org-element-type node) 'org-data)))
