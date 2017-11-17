@@ -263,7 +263,7 @@ The EL argument is not used, but is needed for compatibility."
 
 (defun org-mind-map-get-property (prop el &optional inheritp)
   "Get property PROP from an org element EL, using inheritance if INHERITP is non-nil.
-PROP can be either a string or a symbol."
+PROP can be either a string or a symbol. If it's a string it will be converted to uppercase."
   (let* ((node el)
 	 (prop (intern (if (stringp prop)
 			   (if (string-match "^:" prop)
