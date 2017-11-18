@@ -62,9 +62,6 @@
 ;;  `org-mind-map-dot-output'
 ;;    Format of the DOT output.  Defaults to PDF.
 ;;    default = "pdf"
-;;  `org-mind-map-rankdir'
-;;    Sets the order of the resulting graph.
-;;    default = "LR"
 ;;  `org-mind-map-engine'
 ;;    Sets the layout engine used in your graphs.
 ;;    default = "dot"
@@ -160,14 +157,6 @@
 (defcustom org-mind-map-dot-output "pdf"
   "Format of the DOT output.  Defaults to PDF."
   :type 'string
-  :group 'org-mind-map)
-
-(defcustom org-mind-map-rankdir "LR"
-  "Sets the order of the resulting graph.
-LR is left-to-right, and TB is top-to-bottom."
-  :type '(choice
-          (const :tag "Left to right" "LR")
-          (const :tag "Top to bottom" "TB"))
   :group 'org-mind-map)
 
 (defcustom org-mind-map-engine "dot"
