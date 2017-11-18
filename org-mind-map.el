@@ -68,8 +68,17 @@
 ;;  `org-mind-map-engine'
 ;;    Sets the layout engine used in your graphs.
 ;;    default = "dot"
+;;  `org-mind-map-default-node-attribs'
+;;    Alist of default node attributes and values.
+;;    default = '(("shape" . "plaintext"))
+;;  `org-mind-map-default-edge-attribs'
+;;    Alist of default edge attributes and values.
+;;    default = nil
+;;  `org-mind-map-default-graph-attribs'
+;;    Alist of default graph attributes and values.
+;;    default = '(("autosize" . "false") ("size" . "9,12") ("resolution" . "100") ...))
 ;;  `org-mind-map-node-formats'
-;;    Assoc list of (NAME . FN) pairs where NAME is a value for the :OMM-NODE-FMT property 
+;;    Assoc list of (NAME . FN) pairs where NAME is a value for the :OMM-NODE-FMT property
 ;;    See also `org-mind-map-make-node-fn'
 ;;    default = nil
 ;;  `org-mind-map-edge-formats'
