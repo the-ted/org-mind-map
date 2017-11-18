@@ -172,6 +172,36 @@ See the graphviz user manual for description of these options."
           (const :tag "Undirected Spring Force-Directed" "fdp"))
   :group 'org-mind-map)
 
+(defcustom org-mind-map-default-node-attribs '(("shape" . "plaintext"))
+  "Alist of default node attributes and values.
+Each item in the alist should be a cons cell of the form (ATTRIB . VALUE)
+where ATTRIB and VALUE are strings.
+For a list of value attributes, see here: http://graphviz.org/content/attrs"
+  :type '(alist :key-type (string :tag "Attribute") :value-type (string :tag " Value"))
+  :group 'org-mind-map)
+
+(defcustom org-mind-map-default-edge-attribs nil
+  "Alist of default edge attributes and values.
+Each item in the alist should be a cons cell of the form (ATTRIB . VALUE)
+where ATTRIB and VALUE are strings.
+For a list of value attributes, see here: http://graphviz.org/content/attrs"
+  :type '(alist :key-type (string :tag "Attribute") :value-type (string :tag " Value"))
+  :group 'org-mind-map)
+
+(defcustom org-mind-map-default-graph-attribs '(("autosize" . "false")
+						("size" . "9,12")
+						("resolution" . "100")
+						("nodesep" . "0.75")
+						("overlap" . "false")
+						("spline" . "true")
+						("rankdir" . "LR"))
+  "Alist of default graph attributes and values.
+Each item in the alist should be a cons cell of the form (ATTRIB . VALUE)
+where ATTRIB and VALUE are strings.
+For a list of value attributes, see here: http://graphviz.org/content/attrs"
+  :type '(alist :key-type (string :tag "Attribute") :value-type (string :tag " Value"))
+  :group 'org-mind-map)
+
 (defcustom org-mind-map-node-formats nil
   "Assoc list of (NAME . FN) pairs where NAME is a value for the :OMM-NODE-FMT property 
 of a node/headline, and FN is a function which outputs a format string to be placed after the 
@@ -185,7 +215,7 @@ HM = a hash map of colors
 EL = an org element obtained from `org-element-map'
 
 Note: the :OMM-NODE-FMT property is inherited by children of the node/headline where it is defined."
-  :type '(alist :key-type (string :tag "Name")
+  :type '(alist :key-type (string :tag "              Name")
 		:value-type (function :tag "Format function"))
   :group 'org-mind-map)
 
@@ -200,7 +230,7 @@ EL = an org element obtained from `org-element-map'
 
 Note: the :OMM-EDGE-FMT property affects edges leading to the node at which it is defined, and 
 is inherited by children of that node/headline."
-  :type '(alist :key-type (string :tag "Name")
+  :type '(alist :key-type (string :tag "              Name")
 		:value-type (function :tag "Format function"))
   :group 'org-mind-map)
 
@@ -267,7 +297,7 @@ The EL argument is not used, but is needed for compatibility."
 	  (if (> (length tags) 0)
 	      (concat
 	       "<tr>" (mapconcat (-partial 'org-mind-map-add-color hm) tags "") "</tr>"))
-	  "</table>>];\n"))
+	  "</table>>];"))
 
 (defun org-mind-map-get-property (prop el &optional inheritp)
   "Get property PROP from an org element EL, using inheritance if INHERITP is non-nil.
@@ -406,7 +436,6 @@ Dont return any of the colors listed in the optional arg EXCEPTIONS."
 				      hm))
 			   tags)))))
     hm))
-
 (defun org-mind-map-data (&optional linksp)
   "Create graph & tag legend of all directed pairs of headlines for constructing the digraph.
 If LINKSP is non-nil include graph edges for org links."
@@ -425,27 +454,35 @@ If LINKSP is non-nil include graph edges for org links."
   "Create the dot file from DATA."
   (let ((table (nth 0 data))
         (legend (nth 1 data)))
-    (concat "digraph structs {
-   graph [autosize=false, size=\"9,12\", resolution=100]; nodesep=0.75;
-   rankdir=" org-mind-map-rankdir ";
-   overlap=false;
-   splines=true;
-   node [shape=plaintext];\n"
-   (mapconcat 'identity (mapcar
-			 #'(lambda (x) (concat (org-mind-map-dot-node-name x) x))
-			 (-distinct (-flatten (mapcar (lambda (x) (list (nth 0 x) (nth 1 x)))
-						      table))))
-              " ")
-   (mapconcat 'identity
-	      (mapcar #'(lambda (x)
-			  (format "%s -> %s %s;\n"
-				  (org-mind-map-dot-node-name (nth 0 x))
-				  (org-mind-map-dot-node-name (nth 1 x))
-				  (nth 2 x)))
-		      table)
-	      " ")
-   (org-mind-map-make-legend legend)
-   "}")))
+    (concat "digraph structs {\n        // DEFAULT OPTIONS\n"
+	    (if org-mind-map-default-graph-attribs
+		(concat "        graph ["
+			(mapconcat #'(lambda (x) (concat (car x) "=\"" (cdr x) "\""))
+				   org-mind-map-default-graph-attribs ", ")
+			"];\n"))
+	    (if org-mind-map-default-node-attribs
+		(concat
+		 "        node [" (mapconcat #'(lambda (x) (concat (car x) "=\"" (cdr x) "\""))
+					     org-mind-map-default-node-attribs ", ")
+		 "];\n"))
+	    (if org-mind-map-default-edge-attribs
+		(concat
+		 "        edge [" (mapconcat #'(lambda (x) (concat (car x) "=\"" (cdr x) "\""))
+					     org-mind-map-default-edge-attribs ", ")
+		 "];\n"))
+	    "        // NODES\n"
+	    (mapconcat
+	     #'(lambda (x) (concat "        " (org-mind-map-dot-node-name x) " " x))
+	     (-distinct (-flatten (mapcar (lambda (x) (list (nth 0 x) (nth 1 x))) table)))
+	     "\n")
+	    "\n        // EDGES\n"
+	    (mapconcat #'(lambda (x) (format "        %s -> %s %s;"
+					     (org-mind-map-dot-node-name (nth 0 x))
+					     (org-mind-map-dot-node-name (nth 1 x))
+					     (nth 2 x)))
+		       table "\n")
+	    (org-mind-map-make-legend legend)
+	    "}")))
 
 (defun org-mind-map-command (name)
   "Return the shell script that will create the correct file.  
@@ -537,7 +574,7 @@ If called with prefix arg (or PROMPTP is non-nil), then call `org-mind-map-write
 
 ;;;###autoload
 (defmacro org-mind-map-make-node-fn (name doc props &optional shape color other)
-  "Create a function org-mind-map-NAME-node for use with :OMM-NODE-FMT writing node properties 
+  "Create a function org-mind-map-NAME-node for use with :OMM-NODE-FMT writing node properties.
 The created function should be added to `org-mind-map-node-formats' and the associated string
 can be used as the :OMM-NODE-FMT for a tree. 
 Document the function with the DOC arg.
@@ -591,7 +628,7 @@ tree property."
 			   "</tr>"))
 	       "</table>>"
 	       (if shape (concat ",shape=" shape (if color (concat ",style=filled,color=" color))))
-	       (if other (concat "," other)) "];\n"))))
+	       (if other (concat "," other)) "];"))))
 
 ;;;###autoload
 (defmacro org-mind-map-make-edge-fn (name doc props &optional style color other)
