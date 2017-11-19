@@ -552,8 +552,8 @@ If LINKSP is non-nil include graph edges for org links."
       (process-send-string p dot)
       (process-send-string p "\n")
       (process-send-eof p)
-      (set-process-sentinel p (-partial 'org-mind-map-update-message filename))))
-  filename)
+      (set-process-sentinel p (-partial 'org-mind-map-update-message filename))
+      filename)))
 
 ;;;###autoload
 (defun org-mind-map-write-with-prompt nil
