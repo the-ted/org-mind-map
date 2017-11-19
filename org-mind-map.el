@@ -143,7 +143,6 @@
   :type 'integer
   :group 'org-mind-map)
 
-
 (defcustom org-mind-map-unflatten-command "unflatten -l3"
   "Shell executable command for running the UNFLATTEN command."
   :type 'string
@@ -157,6 +156,18 @@
 (defcustom org-mind-map-dot-output "pdf"
   "Format of the DOT output.  Defaults to PDF."
   :type 'string
+  :group 'org-mind-map)
+
+(defcustom org-mind-map-display nil
+  "How the results should be displayed:
+nil = don't display results
+current = display results in current window
+window = display results in new window
+frame = display results in new frame"
+  :type '(choice (const :tag "Don't display" nil)
+		 (const :tag "Display in current window" current)
+		 (const :tag "Display in new window" window)
+		 (const :tag "Display in new frame" frame))
   :group 'org-mind-map)
 
 (defcustom org-mind-map-engine "dot"
@@ -488,7 +499,7 @@ If LINKSP is non-nil include graph edges for org links."
 	    "}")))
 
 (defun org-mind-map-command (name)
-  "Return the shell script that will create the correct file.  
+  "Return the shell script that will create the correct file.
 The output file will be in the same location as the org file, with the same name as NAME."
   (concat org-mind-map-unflatten-command " | "
 	  org-mind-map-dot-command " -T"
@@ -520,11 +531,20 @@ If LINKSP is non-nil include graph edges for org links."
 	(kill-buffer "*org-mind-map-errors*"))
     (let* ((p (start-process-shell-command
 	       "org-mind-map-s" "*org-mind-map-errors*"
-	       (org-mind-map-command name))))
+	       (org-mind-map-command name)))
+	   (filename (concat name "." org-mind-map-dot-output "")))
       (process-send-string p dot)
       (process-send-string p "\n")
       (process-send-eof p)
-      (set-process-sentinel p 'org-mind-map-update-message))))
+      (set-process-sentinel p 'org-mind-map-update-message)
+      (cl-case org-mind-map-display
+	(nil nil)
+	(current (find-file filename))
+	(window (find-file-other-window filename))
+	(frame (switch-to-buffer-other-frame (find-file-noselect filename))))
+      (cl-case major-mode
+	(pdf-view-mode (pdf-view-fit-page-to-window))
+	(doc-view-mode (doc-view-fit-page-to-window))))))
 
 ;;;###autoload
 (defun org-mind-map-write-with-prompt nil
