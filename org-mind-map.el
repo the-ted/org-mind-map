@@ -272,7 +272,12 @@ defined in `org-mind-map-node-formats'."
 
 (defun org-mind-map-dot-node-name (s)
   "Make string S formatted to be usable within dot node names."
-  (replace-regexp-in-string "[^A-Za-z0-9]" "" s nil t))
+  (replace-regexp-in-string
+   "[^A-Za-z0-9]" ""
+   (replace-regexp-in-string
+    "</?\\(table\\|tr\\|td\\)[^<>]*>" ""
+    (replace-regexp-in-string "label=\\(\"[^\"]+\"\\|[^,]+\\).*" "\\1" s))
+   nil t))
 
 (defun org-mind-map-add-color (hm tag &optional colspan)
   "Create data element containing TAG with associated color found in hashmap HM."
