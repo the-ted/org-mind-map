@@ -507,13 +507,24 @@ The output file will be in the same location as the org file, with the same name
           (shell-quote-argument org-mind-map-engine) " -o"
           (shell-quote-argument (concat name "." org-mind-map-dot-output ""))))
 
-(defun org-mind-map-update-message (process event)
-  "Write an update message on the output of running org-mind-map based on PROCESS and EVENT."
+(defun org-mind-map-update-message (filename process event)
+  "Write an update message on the output of running org-mind-map based on PROCESS and EVENT.
+Open FILENAME according to value of `org-mind-map-display'."
   (let* ((e (with-current-buffer "*org-mind-map-errors*"
 	      (buffer-string))))
     (if (string= e "")
         (princ (format "Org mind map %s" event))
-      (princ (format "Org mind map %sErrors: %s" event e)))))
+      (princ (format "Org mind map %sErrors: %s" event e)))
+    (if (string= event "finished\n")
+	(progn
+	  (cl-case org-mind-map-display
+	    (nil nil)
+	    (current (find-file filename))
+	    (window (find-file-other-window filename))
+	    (frame (switch-to-buffer-other-frame (find-file-noselect filename))))
+	  (cl-case major-mode
+	    (pdf-view-mode (pdf-view-fit-page-to-window))
+	    (doc-view-mode (doc-view-fit-page-to-window)))))))
 
 (defun org-mind-map-write-named (name &optional debug linksp)
   "Create a directed graph output based on the org tree in the current buffer, with name NAME.  
@@ -536,15 +547,7 @@ If LINKSP is non-nil include graph edges for org links."
       (process-send-string p dot)
       (process-send-string p "\n")
       (process-send-eof p)
-      (set-process-sentinel p 'org-mind-map-update-message)
-      (cl-case org-mind-map-display
-	(nil nil)
-	(current (find-file filename))
-	(window (find-file-other-window filename))
-	(frame (switch-to-buffer-other-frame (find-file-noselect filename))))
-      (cl-case major-mode
-	(pdf-view-mode (pdf-view-fit-page-to-window))
-	(doc-view-mode (doc-view-fit-page-to-window))))))
+      (set-process-sentinel p (-partial 'org-mind-map-update-message filename)))))
 
 ;;;###autoload
 (defun org-mind-map-write-with-prompt nil
