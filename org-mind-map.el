@@ -552,7 +552,8 @@ If LINKSP is non-nil include graph edges for org links."
       (process-send-string p dot)
       (process-send-string p "\n")
       (process-send-eof p)
-      (set-process-sentinel p (-partial 'org-mind-map-update-message filename)))))
+      (set-process-sentinel p (-partial 'org-mind-map-update-message filename))))
+  filename)
 
 ;;;###autoload
 (defun org-mind-map-write-with-prompt nil
@@ -587,9 +588,10 @@ To customize, see the org-mind-map group.
 If called with prefix arg (or PROMPTP is non-nil), then call `org-mind-map-write-with-prompt'."
   (interactive "P")
   (org-narrow-to-subtree)
-  (if promptp (org-mind-map-write-with-prompt)
-    (org-mind-map-write-named (org-mind-map-default-filename t)))
-  (widen))
+  (let ((filename (if promptp (org-mind-map-write-with-prompt)
+		    (org-mind-map-write-named (org-mind-map-default-filename t)))))
+    (widen)
+    filename))
 
 ;;;###autoload
 (defun org-mind-map-write-current-tree (&optional promptp)
@@ -598,10 +600,7 @@ If called with prefix arg (or PROMPTP is non-nil), then call `org-mind-map-write
   (interactive "P")
   (save-restriction
     (ignore-errors (outline-up-heading 100))
-    (org-narrow-to-subtree)
-    (if promptp (org-mind-map-write-with-prompt)
-      (org-mind-map-write-named (org-mind-map-default-filename t)))
-    (widen)))
+    (org-mind-map-write-current-branch promptp)))
 
 ;;;###autoload
 (defmacro org-mind-map-make-node-fn (name doc props &optional shape color other)
@@ -699,6 +698,70 @@ tree property."
 	       (if color (concat ",color=\"" color "\" "))
 	       (if style (concat ",style=\"" style "\""))
 	       (if other (concat "," other)) "]"))))
+
+(defun ox-graphviz-export (&optional async subtreep visible-only body-only info)
+  "Export the current buffer to a graphviz diagram.
+Optional argument ASYNC to asynchronously export.
+Optional argument SUBTREEP to export current subtree.
+Optional argument VISIBLE-ONLY to only export visible content.
+Optional argument BODY-ONLY export only the body.
+Optional argument INFO is a plist of options."
+  (let ((org-mind-map-display nil))
+    (if subtreep (org-mind-map-write-current-branch)
+      (org-mind-map-write))))
+
+(defun ox-graphviz-export-and-open (&optional async subtreep visible-only body-only info)
+  "Export the current buffer to a graphviz diagram, and open the output file.
+Optional argument ASYNC to asynchronously export.
+Optional argument SUBTREEP to export current subtree.
+Optional argument VISIBLE-ONLY to only export visible content.
+Optional argument BODY-ONLY export only the body.
+Optional argument INFO is a plist of options."
+  (let ((org-mind-map-display (or org-mind-map-display 'current)))
+    (if subtreep (org-mind-map-write-current-branch)
+      (org-mind-map-write))))
+
+(defun ox-graphviz-export-dot (&optional async subtreep visible-only body-only info)
+  "Export the current buffer to a graphviz diagram, and create and open a dot file.
+Optional argument ASYNC to asynchronously export.
+Optional argument SUBTREEP to export current subtree.
+Optional argument VISIBLE-ONLY to only export visible content.
+Optional argument BODY-ONLY export only the body.
+Optional argument INFO is a plist of options."
+  (let ((org-mind-map-display nil)
+	(filename (org-mind-map-default-filename subtreep))
+	(linksp (y-or-n-p "Include org links? ")))
+    (if subtreep (org-narrow-to-subtree))
+    (org-mind-map-write-named filename (concat filename ".dot") linksp)
+    (widen)))
+
+(defun ox-graphviz-export-dot-and-open (&optional async subtreep visible-only body-only info)
+  "Export the current buffer to a graphviz diagram and a dot file, and open the output file.
+Optional argument ASYNC to asynchronously export.
+Optional argument SUBTREEP to export current subtree.
+Optional argument VISIBLE-ONLY to only export visible content.
+Optional argument BODY-ONLY export only the body.
+Optional argument INFO is a plist of options."
+  (let ((org-mind-map-display (or org-mind-map-display 'current))
+	(filename (org-mind-map-default-filename subtreep))
+	(linksp (y-or-n-p "Include org links? ")))
+    (if subtreep (org-narrow-to-subtree))
+    (org-mind-map-write-named filename (concat filename ".dot") linksp)
+    (widen)))
+
+(defun org-mind-map-export-message nil
+  "Message string for `org-export-dispatch' buffer."
+  (if (> (length org-mind-map-dot-output) 1)
+      "Select output file format"
+    (concat "As " (car org-mind-map-dot-output) " file")))
+
+(org-export-define-derived-backend 'graphviz 'org
+  :menu-entry
+  '(?g "Export to graphviz diagram"
+       ((?f "Create graph" ox-graphviz-export)
+	(?o "Create graph and open" ox-graphviz-export-and-open)
+	(?d "Create graph & dot file" ox-graphviz-export-dot)
+	(?O "Create graph & dot file, and open graph" ox-graphviz-export-dot-and-open))))
 
 ;; Add a tool bar icon
 ;; (define-key org-mode-map [tool-bar org-button]
