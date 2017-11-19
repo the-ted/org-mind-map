@@ -452,6 +452,7 @@ Dont return any of the colors listed in the optional arg EXCEPTIONS."
 				      hm))
 			   tags)))))
     hm))
+
 (defun org-mind-map-data (&optional linksp)
   "Create graph & tag legend of all directed pairs of headlines for constructing the digraph.
 If LINKSP is non-nil include graph edges for org links."
