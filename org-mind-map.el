@@ -153,9 +153,11 @@
   :type 'string
   :group 'org-mind-map)
 
-(defcustom org-mind-map-dot-output "pdf"
-  "Format of the DOT output.  Defaults to PDF."
-  :type 'string
+(defcustom org-mind-map-dot-output '("pdf" "png" "jpeg" "svg" "eps" "gif" "tiff")
+  "List of formats for the DOT output file.
+If more than one are specified then the user will be prompted to choose one.
+To find a list of available formats, on the command line enter: dot -T?"
+  :type '(repeat (string :tag "File type"))
   :group 'org-mind-map)
 
 (defcustom org-mind-map-display nil
@@ -498,14 +500,14 @@ If LINKSP is non-nil include graph edges for org links."
 	    (org-mind-map-make-legend legend)
 	    "}")))
 
-(defun org-mind-map-command (name)
-  "Return the shell script that will create the correct file.
-The output file will be in the same location as the org file, with the same name as NAME."
+(defun org-mind-map-command (name outputtype)
+  "Return the shell script that will create the correct file NAME of type OUTPUTTYPE.
+The output file will be in the same location as the org file."
   (concat org-mind-map-unflatten-command " | "
 	  org-mind-map-dot-command " -T"
-	  (shell-quote-argument org-mind-map-dot-output) " -K"
+	  (shell-quote-argument outputtype) " -K"
           (shell-quote-argument org-mind-map-engine) " -o"
-          (shell-quote-argument (concat name "." org-mind-map-dot-output ""))))
+          (shell-quote-argument (concat name "." outputtype ""))))
 
 (defun org-mind-map-update-message (filename process event)
   "Write an update message on the output of running org-mind-map based on PROCESS and EVENT.
@@ -532,9 +534,12 @@ To customize, see the org-mind-map group.
 If DEBUG is non-nil, then print the dot command to the *Messages* buffer,
 and print the dotfile to the *Messages* buffer or to a file if DEBUG is a filename.
 If LINKSP is non-nil include graph edges for org links."
-  (let ((dot (org-mind-map-make-dot (org-mind-map-data linksp))))
+  (let ((dot (org-mind-map-make-dot (org-mind-map-data linksp)))
+	(outputtype (if (> (length org-mind-map-dot-output) 1)
+			(completing-read "Output file type: " org-mind-map-dot-output)
+		      (car org-mind-map-dot-output))))
     (if debug
-	(progn (message (org-mind-map-command name))
+	(progn (message (org-mind-map-command name outputtype))
 	       (if (stringp debug)
 		   (with-temp-file debug (insert dot))
 		 (message dot "%s"))))
@@ -542,8 +547,8 @@ If LINKSP is non-nil include graph edges for org links."
 	(kill-buffer "*org-mind-map-errors*"))
     (let* ((p (start-process-shell-command
 	       "org-mind-map-s" "*org-mind-map-errors*"
-	       (org-mind-map-command name)))
-	   (filename (concat name "." org-mind-map-dot-output "")))
+	       (org-mind-map-command name outputtype)))
+	   (filename (concat name "." outputtype "")))
       (process-send-string p dot)
       (process-send-string p "\n")
       (process-send-eof p)
