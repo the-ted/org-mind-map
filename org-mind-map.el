@@ -771,17 +771,17 @@ Optional argument INFO is a plist of options."
 ;;    ))
 
 ;; Add menu items
-(define-key org-mode-map [menu-bar Org Diagram]
-  (cons "Graphviz diagram" (make-sparse-keymap "Graphviz diagram")))
+;; (define-key org-mode-map [menu-bar Org Diagram]
+;;   (cons "Graphviz diagram" (make-sparse-keymap "Graphviz diagram")))
 
-(define-key org-mode-map [menu-bar Org Diagram all]
-  '("Diagram of whole buffer" . org-mind-map-write))
+;; (define-key org-mode-map [menu-bar Org Diagram all]
+;;   '("Diagram of whole buffer" . org-mind-map-write))
 
-(define-key org-mode-map [menu-bar Org Diagram current]
-  '("Diagram of current tree" . org-mind-map-write-current-tree))
+;; (define-key org-mode-map [menu-bar Org Diagram current]
+;;   '("Diagram of current tree" . org-mind-map-write-current-tree))
 
-(define-key org-mode-map [menu-bar Org Diagram branch]
-  '("Diagram of current branch" . org-mind-map-write-current-branch))
+;; (define-key org-mode-map [menu-bar Org Diagram branch]
+;;   '("Diagram of current branch" . org-mind-map-write-current-branch))
 
 ;; (global-set-key (kbd "<f4>") 'org-mind-map-write)
 
