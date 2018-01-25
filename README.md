@@ -26,7 +26,7 @@ To install, add this code to your .emacs:
 (require 'ox)
 (require 'ox-org)
 (require 'org-macs)
-(setq load-path (cons "~/.emacs.dir/org-mind-map/" load-path))
+(setq load-path (cons "INSTALLPATH" load-path))
 (require 'org-mind-map)
 ```
 
