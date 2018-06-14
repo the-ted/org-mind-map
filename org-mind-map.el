@@ -187,7 +187,7 @@ See the graphviz user manual for description of these options."
   "Alist of default node attributes and values.
 Each item in the alist should be a cons cell of the form (ATTRIB . VALUE)
 where ATTRIB and VALUE are strings.
-For a list of value attributes, see here: http://graphviz.org/content/attrs"
+For a list of value attributes, see here: https://graphviz.gitlab.io/_pages/doc/info/attrs.html"
   :type '(alist :key-type (string :tag "Attribute") :value-type (string :tag " Value"))
   :group 'org-mind-map)
 
@@ -195,7 +195,7 @@ For a list of value attributes, see here: http://graphviz.org/content/attrs"
   "Alist of default edge attributes and values.
 Each item in the alist should be a cons cell of the form (ATTRIB . VALUE)
 where ATTRIB and VALUE are strings.
-For a list of value attributes, see here: http://graphviz.org/content/attrs"
+For a list of value attributes, see here: https://graphviz.gitlab.io/_pages/doc/info/attrs.html"
   :type '(alist :key-type (string :tag "Attribute") :value-type (string :tag " Value"))
   :group 'org-mind-map)
 
@@ -209,7 +209,7 @@ For a list of value attributes, see here: http://graphviz.org/content/attrs"
   "Alist of default graph attributes and values.
 Each item in the alist should be a cons cell of the form (ATTRIB . VALUE)
 where ATTRIB and VALUE are strings.
-For a list of value attributes, see here: http://graphviz.org/content/attrs"
+For a list of value attributes, see here: https://graphviz.gitlab.io/_pages/doc/info/attrs.html"
   :type '(alist :key-type (string :tag "Attribute") :value-type (string :tag " Value"))
   :group 'org-mind-map)
 
