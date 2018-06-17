@@ -275,12 +275,12 @@ defined in `org-mind-map-node-formats'."
 
 (defun org-mind-map-wrap-lines (s)
   "Wraps a string S so that it can never be more than ORG-MIND-MAP-WRAP-LINE-LENGTH characters long."
-  (let* ((s2 (org-do-wrap (split-string s " ") org-mind-map-wrap-line-length)))
+  (let* ((s2 (org--do-wrap (split-string s " ") org-mind-map-wrap-line-length)))
     (mapconcat 'identity s2 "<br></br>")))
 
 (defun org-mind-map-wrap-legend-lines (s)
   "Wraps a string S so that it can never be more than ORG-MIND-MAP-WRAP-LEGEND-LINE-LENGTH characters long."
-  (let* ((s2 (org-do-wrap (split-string s " ") org-mind-map-wrap-legend-line-length)))
+  (let* ((s2 (org--do-wrap (split-string s " ") org-mind-map-wrap-legend-line-length)))
     (mapconcat 'identity s2 "<br></br>")))
 
 (defun org-mind-map-dot-node-name (s)

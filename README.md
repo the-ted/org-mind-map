@@ -23,7 +23,11 @@ This package also relies on the org-mode and dash libraries, available from melp
 To install, add this code to your .emacs:
 
 ```elisp
-(load "INSTALLPATH/org-mind-map.el")
+(require 'ox)
+(require 'ox-org)
+(require 'org-macs)
+(setq load-path (cons "INSTALLPATH" load-path))
+(require 'org-mind-map)
 ```
 
 Then, run `M-x org-mind-map-write` within the org-mode file you would like to make a mind-map for. If all works as expected, a PDF file will be generated in the same directory as the org file.
