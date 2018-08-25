@@ -175,4 +175,4 @@ http://pages.sachachua.com/evil-plans/
 Customize the `org-mind-map-engine` variable to specify additional layout options (e.g. radial layouts where root nodes are in the center of the graph), and customize `org-mind-map-rankdir` to specify if the chart is going up-and-down or left-to-right.
 
 ## Selective Export
-   Use the command `org-mind-map-write-tree` to just create a map from the current tree.
+   Use the command `org-mind-map-write-current-tree` to just create a map from the current tree.
