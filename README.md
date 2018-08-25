@@ -69,34 +69,6 @@ These are randomly color-coded into pastel tags:
 
 ![example-2.org.pdf](example-2.org.png)
 
-## Interleaving Graphs
-
-Finally, by naming headlines across your org-mode file, as shown below, you can interleave trees.
-
-```Org
-* This is an org-mode tree with tags
-** Branch A :TagA:
-*** Sub-Branch 1 :TagA:
-*** Sub-Branch 2 :TagA:
-*** Sub-Branch 3 :TagA:TagB:
-** Branch B :TagB:
-** Branch C
-** Branch D
-* This is an org-mode tree that interleaves
-** Branch E
-*** Sub-Branch 3
-*** Sub-Branch 3 :TagA:TagB:
-** Branch B
-```
-
-
- this results in this file:
-
-![example-3.org.pdf](example-3.org.png)
-
-Note that the interleaving is done based on the exact text of the headline, so these have to exactly match (including tags).
-
-
 ## Selective Colors
    If you would like a node to show up as a specific color, you can add the `:OMM-COLOR:` and `:OMM-LEGEND:` properties to a node. The node will be colored in, and a legend entry item will be added, as shown below:
 
@@ -165,6 +137,34 @@ Note that the interleaving is done based on the exact text of the headline, so t
 
 ![example-5.org.png](example-5.org.png)
 
+## Including text
+
+   You can also control the display of text within each heading with
+   the `org-mind-map-include-text` option. When set to `t`, this
+   displays all of the paragraph text underneath a given
+   headline.
+
+For example,
+
+```Org
+* Branch One
+** Branch Two
+   Here is some interesting text...
+
+** Branch Three
+*** Example
+    - Plain lists show up as additional paragraphs
+
+    [[http://www.google.com/][But links don't show up at all]]
+
+    #+BEGIN_SRC
+    Nor do source code blocks.
+    #+END_SRC
+```
+
+this results in this file:
+
+![example-7_diagram.png](example-7_diagram.png)
 
 # Thanks!
 

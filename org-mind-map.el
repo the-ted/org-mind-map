@@ -1,7 +1,7 @@
 ;;; org-mind-map.el --- Creates a directed graph from org-mode files
 ;; Author: Ted Wiles <theodore.wiles@gmail.com>
 ;; Keywords: orgmode, extensions, graphviz, dot
-;; Version: 0.3
+;; Version: 0.4
 ;; URL: https://github.com/theodorewiles/org-mind-map/org-mind-map.el
 ;; Package-Requires: ((emacs "24") (dash "1.8.0") (org "8.2.10"))
 
@@ -91,6 +91,10 @@
 ;;  `org-mind-map-tag-colors'
 ;;    An alist of (TAG . COLOR) pairs for choosing colors for tags.
 ;;    default = nil
+;;  `org-mind-map-include-text'
+;;    A boolean indicating whether our not to include paragraph text in body of nodes.
+;;    default = t
+
 
 ;; The headings of the org-mode file are treated as node text in the resulting tree.
 ;; Org-mode heading tags are included in the resulting tree as additional cells
@@ -125,9 +129,9 @@
 
 (require 'dash)
 (require 'org)
+(require 'subr-x)
 
-
-(defconst org-mind-map-version "0.1")
+(defconst org-mind-map-version "0.4")
 
 (defgroup org-mind-map nil
   "Convert org-mode tree into a graphviz directed graph"
@@ -135,6 +139,11 @@
 
 (defcustom org-mind-map-wrap-line-length 30
   "Line length within graphviz nodes."
+  :type 'integer
+  :group 'org-mind-map)
+
+(defcustom org-mind-map-wrap-text-length 60
+  "Line length within graphviz nodes that have longer text."
   :type 'integer
   :group 'org-mind-map)
 
@@ -273,10 +282,25 @@ defined in `org-mind-map-node-formats'."
   :type '(alist :key-type (string :tag "     Tag") :value-type (string :tag "Color"))
   :group 'org-mind-map)
 
+(defcustom org-mind-map-include-text t
+  "A boolean indicating whether our not to include paragraph text in body of nodes.
+   default = t"
+  :type 'boolean
+  :group 'org-mind-map
+  )
+
+(defun org-mind-map-wrap (s l)
+  (let* ((s2 (org-do-wrap (split-string s " ") l)))
+    (mapconcat 'identity s2 "<br></br>")))
+
 (defun org-mind-map-wrap-lines (s)
   "Wraps a string S so that it can never be more than ORG-MIND-MAP-WRAP-LINE-LENGTH characters long."
-  (let* ((s2 (org-do-wrap (split-string s " ") org-mind-map-wrap-line-length)))
-    (mapconcat 'identity s2 "<br></br>")))
+  (org-mind-map-wrap s org-mind-map-wrap-line-length))
+
+(defun org-mind-map-wrap-text (s)
+  "Wraps a string S so that it can never be more than ORG-MIND-MAP-WRAP-TEXT-LENGTH characters long."
+  (org-mind-map-wrap s org-mind-map-wrap-text-length))
+
 
 (defun org-mind-map-wrap-legend-lines (s)
   "Wraps a string S so that it can never be more than ORG-MIND-MAP-WRAP-LEGEND-LINE-LENGTH characters long."
@@ -286,10 +310,10 @@ defined in `org-mind-map-node-formats'."
 (defun org-mind-map-dot-node-name (s)
   "Make string S formatted to be usable within dot node names."
   (concat "\""
-          (replace-regexp-in-string
-           "</?\\(table\\|tr\\|td\\)[^<>]*>" ""
-           (replace-regexp-in-string "label=\\(\"[^\"]+\"\\|[^,]+\\).*" "\\1" s))
-          "\""))
+	  (replace-regexp-in-string
+	   "</?\\(table\\|tr\\|td\\)[^<>]*>" ""
+	   (replace-regexp-in-string "label=\\(\"[^\"]+\"\\|[^,]+\\).*" "\\1" s))
+	  "\""))
 
 (defun org-mind-map-add-color (hm tag &optional colspan)
   "Create data element containing TAG with associated color found in hashmap HM."
@@ -298,7 +322,7 @@ defined in `org-mind-map-node-formats'."
 	    (if colspan (concat " colspan=\"" (int-to-string colspan) "\""))
 	    (if color (concat " bgcolor=\"" color "\"")) ">" tag "</td>")))
 
-(defun org-mind-map-write-tags-default (title tags color hm el)
+(defun org-mind-map-write-tags-default (title tags color hm el &optional content)
   "Default function for writing nodes.
 Label node with TITLE and background COLOR, and write TAGS (a list of tag names)
 into boxes underneath, using associated colors in hashmap HM.
@@ -312,6 +336,9 @@ The EL argument is not used, but is needed for compatibility."
 	  (if (> (length tags) 0)
 	      (concat
 	       "<tr>" (mapconcat (-partial 'org-mind-map-add-color hm) tags "") "</tr>"))
+	  (if (> (length content) 0)
+	      (concat
+	       "<tr><td BALIGN=\"LEFT\" ALIGN=\"LEFT\">" content "</td></tr>"))
 	  "</table>>];"))
 
 (defun org-mind-map-get-property (prop el &optional inheritp)
@@ -345,13 +372,42 @@ Then, formats the titles and tags so as to be usable within DOT's graphviz langu
          (title (replace-regexp-in-string "&" "&amp;" wrapped-title nil t))
          (color (org-element-property :OMM-COLOR el))
 	 (tags (org-element-property :tags el))
-	 (fmt (org-mind-map-get-property (if edgep :OMM-EDGE-FMT :OMM-NODE-FMT) el t)))
-    (if edgep (funcall (or (cdr (assoc fmt org-mind-map-edge-formats))
-			   (lambda (a b) org-mind-map-edge-format-default))
-		       hm el)
-      (funcall (or (cdr (assoc fmt org-mind-map-node-formats))
-		   'org-mind-map-write-tags-default)
-	       title tags color hm el))))
+	 (fmt (org-mind-map-get-property (if edgep :OMM-EDGE-FMT :OMM-NODE-FMT) el))
+	 (b (org-element-property :begin el))
+	 (e (org-element-property :end el))
+	 (content
+	  (if org-mind-map-include-text
+	      (save-restriction
+		(narrow-to-region b e)
+		(let*
+		    ((new-end
+		      (org-element-map (org-element-parse-buffer 'object 'true)
+			  'headline
+			(lambda (x)
+			  (if (not
+			       (= (org-element-property :begin x) b))
+			      b nil))
+			nil 'true)))
+		  (if new-end
+		      (progn
+			(widen)
+			(narrow-to-region b new-end))))
+		(mapconcat 'identity
+			   (org-element-map (org-element-parse-buffer 'object 'true)
+			       '(paragraph)
+			     (lambda (x)
+			       (org-mind-map-wrap-text
+				(string-trim
+				 (substring-no-properties
+				  (car (org-element-contents x)))))))
+			   "<br></br><br></br>"))
+	    nil))
+	(if edgep (funcall (or (cdr (assoc fmt org-mind-map-edge-formats))
+			       (lambda (a b) org-mind-map-edge-format-default))
+			   hm el)
+	  (funcall (or (cdr (assoc fmt org-mind-map-node-formats))
+		       'org-mind-map-write-tags-default)
+		   title tags color hm el content))))
 
 (defun org-mind-map-first-headline (e)
   "Figure out the first headline within element E."
@@ -366,20 +422,21 @@ Then, formats the titles and tags so as to be usable within DOT's graphviz langu
   "Is E at a valid link?"
   (condition-case ex
       (let* ((org-link-search-inhibit-query t)
+	     (type (org-element-property :type e))
              (l (org-element-property :path e)))
-        (save-excursion
-	  (org-link-search l)
-          t))
+	(if (string= type "fuzzy")
+	    (save-excursion
+	      (org-link-search l) t)
+	  nil))
     ('error nil)))
-
 
 (defun org-mind-map-destination-headline (e)
   "Figure out where the link in E is pointing to."
   (let* ((l (org-element-property :path e))
          (org-link-search-inhibit-query t))
-    (save-excursion
-      (org-open-link-from-string (concat "[[" l "]]"))
-      (org-element-at-point))))
+	(save-excursion
+	  (org-open-link-from-string (concat "[[" l "]]"))
+	  (org-element-at-point)))))
 
 (defun org-mind-map-get-links (hm)
   "Make a list of links with the headline they are within and
@@ -389,11 +446,13 @@ in order to keep the tag colors consistent across calls."
       'link
     (lambda (l)
       (if (org-mind-map-valid-link? l)
-	  (list (org-mind-map-write-tags
-		 hm (org-mind-map-first-headline l))
-		(org-mind-map-write-tags
-		 hm (org-mind-map-destination-headline l)))))))
-
+	  (let* ((origin
+		  (org-mind-map-write-tags hm
+					   (org-mind-map-first-headline l)))
+		 (h (org-mind-map-destination-headline l))
+		 (destination
+		  (org-mind-map-write-tags hm h)))
+	    (list origin destination))))))
 
 (defun org-mind-map-make-legend (h)
   "Make a legend using the hash-map HM."
@@ -492,7 +551,7 @@ If LINKSP is non-nil include graph edges for org links."
 	     (-distinct (-flatten (mapcar (lambda (x) (list (nth 0 x) (nth 1 x))) table)))
 	     "\n")
 	    "\n        // EDGES\n"
-	    (mapconcat #'(lambda (x) (format "        %s -> %s %s;"
+	    (mapconcat #'(lambda (x) (format "        %s -> %s;"
 					     (org-mind-map-dot-node-name (nth 0 x))
 					     (org-mind-map-dot-node-name (nth 1 x))
 					     (nth 2 x)))
@@ -535,7 +594,7 @@ If DEBUG is non-nil, then print the dot command to the *Messages* buffer,
 and print the dotfile to the *Messages* buffer or to a file if DEBUG is a filename.
 If LINKSP is non-nil include graph edges for org links."
   (let ((dot (org-mind-map-make-dot (org-mind-map-data linksp)))
-	(outputtype (if (> (length org-mind-map-dot-output) 1)
+a	(outputtype (if (> (length org-mind-map-dot-output) 1)
 			(completing-read "Output file type: " org-mind-map-dot-output)
 		      (car org-mind-map-dot-output))))
     (if debug
