@@ -30,13 +30,13 @@ Then, run `M-x org-mind-map-write` within the org-mode file you would like to ma
 
 # Examples
 
-- [Basic concept](#Basic concept)
-- [Tags](#Tags)
-- [Selective Colors](#Selective Colors)
-- [Links](#Links)
-- [Including text](#Including text)
-- [Including images (BETA)](#Including images (BETA))
-- [Selective Export](#Selective Export)
+- [Basic concept](#basic-concept)
+- [Tags](#tags)
+- [Selective Colors](#selective-colors)
+- [Links](#links)
+- [Including text](#including-text)
+- [Including images (BETA)](#including-images-(beta))
+- [Selective Export](#selective-export)
 
 ## Basic concept
 
@@ -56,7 +56,7 @@ The content of the node doesn't matter.
 
 and the result is shown below:
 
-![examples/example-1.org.pdf](example-1.org.png)
+![examples/example-1.org.pdf](examples/example-1.org.png)
 
 ## Tags
 
@@ -75,7 +75,7 @@ You can also add tags, as in this org-mode file:
 
 These are randomly color-coded into pastel tags:
 
-![examples/example-2.org.pdf](example-2.org.png)
+![examples/example-2.org.pdf](examples/example-2.org.png)
 
 ## Selective Colors
    If you would like a node to show up as a specific color, you can add the `:OMM-COLOR:` and `:OMM-LEGEND:` properties to a node. The node will be colored in, and a legend entry item will be added, as shown below:
@@ -108,7 +108,7 @@ These are randomly color-coded into pastel tags:
 
  this results in this file:
 
-![examples/example-4.org.png](example-4.org.png)
+![examples/example-4.org.png](examples/example-4.org.png)
 
 ## Links
    You can also draw edges between nodes by including links to headlines in your Org mode files. Links will be drawn from the parent heading to  the heading of the destination link. This works as shown below:
@@ -143,7 +143,7 @@ These are randomly color-coded into pastel tags:
 
  this results in this file:
 
-![examples/example-5.org.png](example-5.org.png)
+![examples/example-5.org.png](examples/example-5.org.png)
 
 ## Including text
 
@@ -172,7 +172,7 @@ For example,
 
 this results in this file:
 
-![examples/example-7.png](example-7.png)
+![examples/example-7.png](examples/example-7.png)
 
 
 ## Including images (BETA)
@@ -203,7 +203,7 @@ For example,
 
 Results in this file:
 
-![examples/example-8.png](example-8.png)
+![examples/example-8.png](examples/example-8.png)
 
 # Thanks!
 
