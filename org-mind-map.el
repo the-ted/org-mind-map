@@ -289,8 +289,18 @@ defined in `org-mind-map-node-formats'."
   :group 'org-mind-map
   )
 
+(defun org-mind-map-do-wrap (words width)
+  "Create lines of maximum width WIDTH (in characters) from word list WORDS."
+  (let (lines line)
+    (while words
+      (setq line (pop words))
+      (while (and words (< (+ (length line) (length (car words))) width))
+	(setq line (concat line " " (pop words))))
+      (setq lines (push line lines)))
+    (nreverse lines)))
+
 (defun org-mind-map-wrap (s l)
-  (let* ((s2 (org-do-wrap (split-string s " ") l)))
+  (let* ((s2 (org-mind-map-do-wrap (split-string s " ") l)))
     (mapconcat 'identity s2 "<br></br>")))
 
 (defun org-mind-map-wrap-lines (s)
@@ -304,7 +314,7 @@ defined in `org-mind-map-node-formats'."
 
 (defun org-mind-map-wrap-legend-lines (s)
   "Wraps a string S so that it can never be more than ORG-MIND-MAP-WRAP-LEGEND-LINE-LENGTH characters long."
-  (let* ((s2 (org-do-wrap (split-string s " ") org-mind-map-wrap-legend-line-length)))
+  (let* ((s2 (org-mind-map-do-wrap (split-string s " ") org-mind-map-wrap-legend-line-length)))
     (mapconcat 'identity s2 "<br></br>")))
 
 (defun org-mind-map-dot-node-name (s)
