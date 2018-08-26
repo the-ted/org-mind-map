@@ -429,7 +429,7 @@ Then, formats the titles and tags so as to be usable within DOT's graphviz langu
 			       (message "Inline image: %s" (org-export-inline-image-p x))
 			       (if (org-export-inline-image-p x)
 				   (concat 
-				    "<tr><td width='200'>" "<IMG src='"
+				    "<tr><td fixedsize='TRUE' height='100' width='100'>" "<IMG src='"
 				    (org-element-property :path x)
 				    "'/>"
 				    "</td></tr>")

@@ -177,7 +177,7 @@ this results in this file:
 
 ## Including images BETA
 
-   You can also now include PNG files. These will be included as sub-headings. The images are currently scaled to a max width of 200px. This may be updated in the future.
+   You can also now include PNG files. These will be included as sub-headings. The images are currently scaled to a rectangle of 100px by 100px. This may be updated in the future.
 
 For example,
 
