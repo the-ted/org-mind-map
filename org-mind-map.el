@@ -94,6 +94,9 @@
 ;;  `org-mind-map-include-text'
 ;;    A boolean indicating whether our not to include paragraph text in body of nodes.
 ;;    default = t
+;;  `org-mind-map-include-images'
+;;    A boolean indicating whether our not to include images in body of nodes.
+;;    default = t
 
 
 ;; The headings of the org-mode file are treated as node text in the resulting tree.
@@ -289,6 +292,14 @@ defined in `org-mind-map-node-formats'."
   :group 'org-mind-map
   )
 
+(defcustom org-mind-map-include-images t
+  "A boolean indicating whether our not to include paragraph text in body of nodes.
+   default = t"
+  :type 'boolean
+  :group 'org-mind-map
+  )
+
+
 (defun org-mind-map-do-wrap (words width)
   "Create lines of maximum width WIDTH (in characters) from word list WORDS."
   (let (lines line)
@@ -332,7 +343,7 @@ defined in `org-mind-map-node-formats'."
 	    (if colspan (concat " colspan=\"" (int-to-string colspan) "\""))
 	    (if color (concat " bgcolor=\"" color "\"")) ">" tag "</td>")))
 
-(defun org-mind-map-write-tags-default (title tags color hm el &optional content)
+(defun org-mind-map-write-tags-default (title tags color hm el &optional content images)
   "Default function for writing nodes.
 Label node with TITLE and background COLOR, and write TAGS (a list of tag names)
 into boxes underneath, using associated colors in hashmap HM.
@@ -348,7 +359,12 @@ The EL argument is not used, but is needed for compatibility."
 	       "<tr>" (mapconcat (-partial 'org-mind-map-add-color hm) tags "") "</tr>"))
 	  (if (> (length content) 0)
 	      (concat
-	       "<tr><td BALIGN=\"LEFT\" ALIGN=\"LEFT\">" content "</td></tr>"))
+	       "<tr><td BALIGN=\"LEFT\" ALIGN=\"LEFT\">" content "</td></tr>")
+	    )
+
+	  (if (> (length images) 0)
+	      images ""
+	    )
 	  "</table>>];"))
 
 (defun org-mind-map-get-property (prop el &optional inheritp)
@@ -374,6 +390,22 @@ If there is a column summary value for the property that has recently be calcula
 	    val (org-element-property prop node)))
     val))
 
+(defun org-mind-map-narrow-to-heading-content (b)
+  "Narrow to the region until the next headline, if applicable"
+  (let* ((new-end 
+	  (org-element-map (org-element-parse-buffer 'object 'true)
+	      'headline
+	    (lambda (x)
+	      (if (not
+		   (= (org-element-property :begin x) b))
+		  b nil))
+	    nil 'true)))
+    (if new-end
+	(progn
+	  (widen)
+	  (narrow-to-region b new-end)))))
+
+
 (defun org-mind-map-write-tags (hm el &optional edgep)
   "Use HM as the hash-map of colors and takes an element EL and extracts the title and tags.  
 Then, formats the titles and tags so as to be usable within DOT's graphviz language."
@@ -385,23 +417,29 @@ Then, formats the titles and tags so as to be usable within DOT's graphviz langu
 	 (fmt (org-mind-map-get-property (if edgep :OMM-EDGE-FMT :OMM-NODE-FMT) el))
 	 (b (org-element-property :begin el))
 	 (e (org-element-property :end el))
+	 (images
+	  (if org-mind-map-include-images
+	      (save-restriction
+		(narrow-to-region b e)
+		(org-mind-map-narrow-to-heading-content b)
+		(mapconcat 'identity
+			   (org-element-map (org-element-parse-buffer 'object 'true)
+			       '(link)
+			     (lambda (x)
+			       (message "Inline image: %s" (org-export-inline-image-p x))
+			       (if (org-export-inline-image-p x)
+				   (concat 
+				    "<tr><td width='200'>" "<IMG src='"
+				    (org-element-property :path x)
+				    "'/>"
+				    "</td></tr>")
+				 "")))
+			   ""))))
 	 (content
 	  (if org-mind-map-include-text
 	      (save-restriction
 		(narrow-to-region b e)
-		(let*
-		    ((new-end
-		      (org-element-map (org-element-parse-buffer 'object 'true)
-			  'headline
-			(lambda (x)
-			  (if (not
-			       (= (org-element-property :begin x) b))
-			      b nil))
-			nil 'true)))
-		  (if new-end
-		      (progn
-			(widen)
-			(narrow-to-region b new-end))))
+		(org-mind-map-narrow-to-heading-content b)
 		(mapconcat 'identity
 			   (org-element-map (org-element-parse-buffer 'object 'true)
 			       '(paragraph)
@@ -411,13 +449,14 @@ Then, formats the titles and tags so as to be usable within DOT's graphviz langu
 				 (substring-no-properties
 				  (car (org-element-contents x)))))))
 			   "<br></br><br></br>"))
-	    nil)))
+	    nil))
+	 )
 	(if edgep (funcall (or (cdr (assoc fmt org-mind-map-edge-formats))
 			       (lambda (a b) org-mind-map-edge-format-default))
 			   hm el)
 	  (funcall (or (cdr (assoc fmt org-mind-map-node-formats))
 		       'org-mind-map-write-tags-default)
-		   title tags color hm el content))))
+		   title tags color hm el content images))))
 
 (defun org-mind-map-first-headline (e)
   "Figure out the first headline within element E."

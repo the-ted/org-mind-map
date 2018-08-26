@@ -48,7 +48,7 @@ The content of the node doesn't matter.
 
 and the result is shown below:
 
-![example-1.org.pdf](example-1.org.png)
+![examples/example-1.org.pdf](example-1.org.png)
 
 ## Tags
 
@@ -67,7 +67,7 @@ You can also add tags, as in this org-mode file:
 
 These are randomly color-coded into pastel tags:
 
-![example-2.org.pdf](example-2.org.png)
+![examples/example-2.org.pdf](example-2.org.png)
 
 ## Selective Colors
    If you would like a node to show up as a specific color, you can add the `:OMM-COLOR:` and `:OMM-LEGEND:` properties to a node. The node will be colored in, and a legend entry item will be added, as shown below:
@@ -100,7 +100,7 @@ These are randomly color-coded into pastel tags:
 
  this results in this file:
 
-![example-4.org.png](example-4.org.png)
+![examples/example-4.org.png](example-4.org.png)
 
 ## Links
    You can also draw edges between nodes by including links to headlines in your Org mode files. Links will be drawn from the parent heading to  the heading of the destination link. This works as shown below:
@@ -135,7 +135,7 @@ These are randomly color-coded into pastel tags:
 
  this results in this file:
 
-![example-5.org.png](example-5.org.png)
+![examples/example-5.org.png](example-5.org.png)
 
 ## Including text
 
@@ -164,7 +164,38 @@ For example,
 
 this results in this file:
 
-![example-7_diagram.png](example-7_diagram.png)
+![examples/example-7.png](example-7.png)
+
+
+## Including images (BETA)
+
+   You can also now include PNG files. These will be included as sub-headings. The images are currently scaled to a max width of 200px. This may be updated in the future.
+
+For example,
+
+```Org
+* Node A
+
+** Node B
+
+   Example paragraph
+
+   [[Node C]]
+
+   [[./Lena.png]]
+
+** Node C
+
+   More details
+
+** Node D
+   
+   [[Node A]]
+```
+
+Results in this file:
+
+![examples/example-8.png](example-8.png)
 
 # Thanks!
 
