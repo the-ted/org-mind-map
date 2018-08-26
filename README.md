@@ -35,7 +35,7 @@ Then, run `M-x org-mind-map-write` within the org-mode file you would like to ma
 - [Selective Colors](#selective-colors)
 - [Links](#links)
 - [Including text](#including-text)
-- [Including images (BETA)](#including-images-(beta))
+- [Including images (BETA)](#including-images-beta)
 - [Selective Export](#selective-export)
 
 ## Basic concept
@@ -175,7 +175,7 @@ this results in this file:
 ![examples/example-7.png](examples/example-7.png)
 
 
-## Including images (BETA)
+## Including images BETA
 
    You can also now include PNG files. These will be included as sub-headings. The images are currently scaled to a max width of 200px. This may be updated in the future.
 
