@@ -30,6 +30,14 @@ Then, run `M-x org-mind-map-write` within the org-mode file you would like to ma
 
 # Examples
 
+- [Basic concept](#Basic concept)
+- [Tags](#Tags)
+- [Selective Colors](#Selective Colors)
+- [Links](#Links)
+- [Including text](#Including text)
+- [Including images (BETA)](#Including images (BETA))
+- [Selective Export](#Selective Export)
+
 ## Basic concept
 
 Here is an example org-mode tree that demonstrates the basic concept:
