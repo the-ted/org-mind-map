@@ -401,7 +401,7 @@ Then, formats the titles and tags so as to be usable within DOT's graphviz langu
 				 (substring-no-properties
 				  (car (org-element-contents x)))))))
 			   "<br></br><br></br>"))
-	    nil))
+	    nil)))
 	(if edgep (funcall (or (cdr (assoc fmt org-mind-map-edge-formats))
 			       (lambda (a b) org-mind-map-edge-format-default))
 			   hm el)
@@ -436,7 +436,7 @@ Then, formats the titles and tags so as to be usable within DOT's graphviz langu
          (org-link-search-inhibit-query t))
 	(save-excursion
 	  (org-open-link-from-string (concat "[[" l "]]"))
-	  (org-element-at-point)))))
+	  (org-element-at-point))))
 
 (defun org-mind-map-get-links (hm)
   "Make a list of links with the headline they are within and
@@ -844,6 +844,5 @@ Optional argument INFO is a plist of options."
 ;; (global-set-key (kbd "<f4>") 'org-mind-map-write)
 
 (provide 'org-mind-map)
-
 ;;; org-mind-map.el ends here
 
