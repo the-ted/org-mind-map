@@ -3,10 +3,10 @@ This is an emacs package that creates graphviz directed graphs from org-mode fil
 
 # Requirements
 
-This package relies on the [Graphviz](http://graphviz.org/) suite of graphical diagramming tools. 
-## windows 
-(the default option), these tools are available via [cygwin](http://cygwin.com/). 
-## linux 
+This package relies on the [Graphviz](http://graphviz.org/) suite of graphical diagramming tools.
+## windows
+(the default option), these tools are available via [cygwin](http://cygwin.com/).
+## linux
 these tools are available through any of the popular package managers.
 ## mac
 binarys are at the graphviz site, but for recent versions like El Capitan, Sierra and High Sierra, macports or
@@ -24,6 +24,28 @@ To install, add this code to your .emacs:
 
 ```elisp
 (load "INSTALLPATH/org-mind-map.el")
+```
+
+or if you're using use-package:
+
+```elisp
+;; This is an Emacs package that creates graphviz directed graphs from
+;; the headings of an org file
+(use-package org-mind-map
+  :init
+  (require 'ox-org)
+  :ensure t
+  ;; Uncomment the below if 'ensure-system-packages` is installed
+  ;;:ensure-system-package (gvgen . graphviz)
+  :config
+  (setq org-mind-map-engine "dot")       ; Default. Directed Graph
+  ;; (setq org-mind-map-engine "neato")  ; Undirected Spring Graph
+  ;; (setq org-mind-map-engine "twopi")  ; Radial Layout
+  ;; (setq org-mind-map-engine "fdp")    ; Undirected Spring Force-Directed
+  ;; (setq org-mind-map-engine "sfdp")   ; Multiscale version of fdp for the layout of large graphs
+  ;; (setq org-mind-map-engine "twopi")  ; Radial layouts
+  ;; (setq org-mind-map-engine "circo")  ; Circular Layout
+  )
 ```
 
 Then, run `M-x org-mind-map-write` within the org-mode file you would like to make a mind-map for. If all works as expected, a PDF file will be generated in the same directory as the org file.
@@ -87,16 +109,16 @@ These are randomly color-coded into pastel tags:
 :OMM-LEGEND: Legend entry
 :END:
 
-** Branch A 
-*** Sub-Branch 1 
-*** Sub-Branch 2 
-*** Sub-Branch 3 
+** Branch A
+*** Sub-Branch 1
+*** Sub-Branch 2
+*** Sub-Branch 3
 
 ** Branch B
 
 
-** Branch C 
-** Branch D 
+** Branch C
+** Branch D
 * This is an org-mode tree that interleaves :TagOne:
 ** Branch E
 *** Sub-Branch 3 :TagTwo:
@@ -120,16 +142,16 @@ These are randomly color-coded into pastel tags:
 :OMM-LEGEND: Legend entry
 :END:
 
-** Branch A 
-*** Sub-Branch 1 
-*** Sub-Branch 2 
-*** Sub-Branch 3 
+** Branch A
+*** Sub-Branch 1
+*** Sub-Branch 2
+*** Sub-Branch 3
 
 ** Branch B
 
 
-** Branch C 
-** Branch D 
+** Branch C
+** Branch D
 * Here is another tree
 ** Branch One
 ** Branch Two
@@ -197,7 +219,7 @@ For example,
    More details
 
 ** Node D
-   
+
    [[Node A]]
 ```
 
