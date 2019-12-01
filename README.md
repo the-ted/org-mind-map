@@ -1,5 +1,5 @@
 # org-mind-map
-This is an emacs package that creates graphviz directed graphs from org-mode files.
+This is an emacs package that creates graphviz directed graphs from org-mode files. This project is currently unmaintained! If anyone would like to take this over an fix up my (very messy) code, please let me know.
 
 # Requirements
 
