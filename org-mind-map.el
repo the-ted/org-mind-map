@@ -863,7 +863,7 @@ Optional argument INFO is a plist of options."
       "Select output file format"
     (concat "As " (car org-mind-map-dot-output) " file")))
 
-(org-export-define-derived-backend 'graphviz 'org
+(defun org-export-define-derived-backend 'graphviz 'org
   :menu-entry
   '(?g "Export to graphviz diagram"
        ((?f "Create graph" ox-graphviz-export)
