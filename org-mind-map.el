@@ -392,14 +392,14 @@ If there is a column summary value for the property that has recently be calcula
 
 (defun org-mind-map-narrow-to-heading-content (b)
   "Narrow to the region until the next headline, if applicable"
-  (let* ((new-end 
+  (let* ((new-end
 	  (org-element-map (org-element-parse-buffer 'object 'true)
 	      'headline
 	    (lambda (x)
-	      (if (not
-		   (= (org-element-property :begin x) b))
-		  b nil))
-	    nil 'true)))
+          (if (not (= (org-element-property :begin x) b))
+            (org-element-property :begin x)
+            nil))
+        nil 'true)))
     (if new-end
 	(progn
 	  (widen)

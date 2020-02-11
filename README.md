@@ -178,6 +178,8 @@ For example,
 
 ```Org
 * Branch One
+   Here is some text on branch one...
+
 ** Branch Two
    Here is some interesting text...
 
