@@ -286,7 +286,7 @@ defined in `org-mind-map-node-formats'."
   :group 'org-mind-map)
 
 (defcustom org-mind-map-include-text t
-  "A boolean indicating whether our not to include paragraph text in body of nodes.
+  "A boolean indicating whether or not to include paragraph text in body of nodes.
    default = t"
   :type 'boolean
   :group 'org-mind-map
@@ -343,6 +343,12 @@ defined in `org-mind-map-node-formats'."
 	    (if colspan (concat " colspan=\"" (int-to-string colspan) "\""))
 	    (if color (concat " bgcolor=\"" color "\"")) ">" tag "</td>")))
 
+(defun org-mind-map-extract-org-link (text)
+  "Extracts the link from [[text][link]] format if present, otherwise returns the original text."
+  (if (string-match "\\[\\[.*?\\]\\[\\(.*?\\)\\]\\]" text)
+      (match-string 1 text)
+    text))
+
 (defun org-mind-map-write-tags-default (title tags color hm el &optional content images)
   "Default function for writing nodes.
 Label node with TITLE and background COLOR, and write TAGS (a list of tag names)
@@ -353,7 +359,7 @@ The EL argument is not used, but is needed for compatibility."
 	      (concat "<tr><td colspan=\"" (int-to-string (length tags)) "\" ")
 	    "<tr><td")
 	  (if color (concat " bgcolor=\"" color "\" "))
-	  ">" title "</td></tr>"
+	  ">" (org-mind-map-extract-org-link title) "</td></tr>"
 	  (if (> (length tags) 0)
 	      (concat
 	       "<tr>" (mapconcat (-partial 'org-mind-map-add-color hm) tags "") "</tr>"))
