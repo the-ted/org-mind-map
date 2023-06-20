@@ -286,7 +286,7 @@ defined in `org-mind-map-node-formats'."
   :group 'org-mind-map)
 
 (defcustom org-mind-map-include-text t
-  "A boolean indicating whether our not to include paragraph text in body of nodes.
+  "A boolean indicating whether or not to include paragraph text in body of nodes.
    default = t"
   :type 'boolean
   :group 'org-mind-map
